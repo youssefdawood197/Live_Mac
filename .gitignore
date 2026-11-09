@@ -1,0 +1,17 @@
+# Xcode / Swift Package Manager
+.build/
+build/
+DerivedData/
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+.swiftpm/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Teamwork / Agent Internal Logs
+.agents/
