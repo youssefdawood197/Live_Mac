@@ -182,6 +182,15 @@ public final class AssetManager: @unchecked Sendable {
                     let candidate = sourceDir.appendingPathComponent(item.filename)
                     if fileManager.fileExists(atPath: candidate.path) {
                         try? fileManager.copyItem(at: candidate, to: targetURL)
+
+                        // If video, also check and copy candidate sibling thumbnail if available
+                        if item.type == .video {
+                            let candidateThumb = sourceDir.appendingPathComponent(candidate.deletingPathExtension().lastPathComponent + ".jpg")
+                            let targetThumb = baseStorageDirectory.appendingPathComponent(targetURL.deletingPathExtension().lastPathComponent + ".jpg")
+                            if fileManager.fileExists(atPath: candidateThumb.path) && !fileManager.fileExists(atPath: targetThumb.path) {
+                                try? fileManager.copyItem(at: candidateThumb, to: targetThumb)
+                            }
+                        }
                         break
                     }
                 }
@@ -189,10 +198,24 @@ public final class AssetManager: @unchecked Sendable {
 
             // If the item exists in storage or was copied, create a WallpaperItem for it
             if fileManager.fileExists(atPath: targetURL.path) {
+                var thumbURL: URL? = nil
+                if item.type == .web {
+                    let candidate = targetURL.appendingPathComponent("thumbnail.jpg")
+                    if fileManager.fileExists(atPath: candidate.path) {
+                        thumbURL = candidate
+                    }
+                } else if item.type == .video {
+                    let candidate = targetURL.deletingPathExtension().appendingPathExtension("jpg")
+                    if fileManager.fileExists(atPath: candidate.path) {
+                        thumbURL = candidate
+                    }
+                }
+
                 let wallpaper = WallpaperItem(
                     title: item.title,
                     type: item.type,
                     sourceURL: targetURL,
+                    thumbnailURL: thumbURL,
                     desc: item.desc,
                     author: "Lively Mac",
                     isBundled: true
@@ -350,10 +373,13 @@ public final class AssetManager: @unchecked Sendable {
                     let title = itemURL.deletingPathExtension().lastPathComponent
                         .replacingOccurrences(of: "_", with: " ")
                         .capitalized
+                    let sibThumb = itemURL.deletingPathExtension().appendingPathExtension("jpg")
+                    let thumbPath = fileManager.fileExists(atPath: sibThumb.path) ? sibThumb.path : nil
                     items.append(WallpaperItem(
                         title: title,
                         type: .video,
                         pathOrURL: itemURL.path,
+                        thumbnailPath: thumbPath,
                         isBundled: itemURL.path.contains(baseStorageDirectory.path)
                     ))
                 }
@@ -362,10 +388,19 @@ public final class AssetManager: @unchecked Sendable {
                     let title = webMeta.title ?? itemURL.lastPathComponent
                         .replacingOccurrences(of: "_", with: " ")
                         .capitalized
+                    var thumbPath: String? = nil
+                    for thumbName in ["thumbnail.jpg", "thumbnail.png", "preview.jpg", "preview.png"] {
+                        let candidate = itemURL.appendingPathComponent(thumbName)
+                        if fileManager.fileExists(atPath: candidate.path) {
+                            thumbPath = candidate.path
+                            break
+                        }
+                    }
                     items.append(WallpaperItem(
                         title: title,
                         type: .web,
                         pathOrURL: itemURL.path,
+                        thumbnailPath: thumbPath,
                         isInteractive: true,
                         isBundled: itemURL.path.contains(baseStorageDirectory.path)
                     ))

@@ -130,20 +130,7 @@ public struct WallpaperCardView: View {
 
     @ViewBuilder
     private var thumbnailView: some View {
-        if let thumbURL = item.thumbnailURL, let nsImage = NSImage(contentsOf: thumbURL) {
-            Image(nsImage: nsImage)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-        } else {
-            VStack(spacing: 8) {
-                Image(systemName: item.type.sfSymbolName)
-                    .font(.system(size: 36))
-                    .foregroundColor(.secondary)
-                Text(item.type.displayName)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.secondary)
-            }
-        }
+        AsyncThumbnailView(item: item)
     }
 
     private var typeBadge: some View {
@@ -158,5 +145,49 @@ public struct WallpaperCardView: View {
         .padding(.vertical, 3)
         .background(Color.black.opacity(0.65))
         .clipShape(Capsule())
+    }
+}
+
+/// Asynchronous thumbnail component providing instant cached image rendering,
+/// seamless frame extraction for videos, and animated fade-in.
+public struct AsyncThumbnailView: View {
+    public let item: WallpaperItem
+    @ObservedObject private var thumbnailManager = ThumbnailManager.shared
+    @State private var loadedImage: NSImage? = nil
+
+    public init(item: WallpaperItem) {
+        self.item = item
+    }
+
+    public var body: some View {
+        ZStack {
+            if let image = loadedImage ?? thumbnailManager.cachedImage(for: item) {
+                Image(nsImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .clipped()
+                    .transition(.opacity.animation(.easeInOut(duration: 0.2)))
+            } else {
+                VStack(spacing: 8) {
+                    Image(systemName: item.type.sfSymbolName)
+                        .font(.system(size: 36))
+                        .foregroundColor(.secondary.opacity(0.6))
+                    Text(item.type.displayName)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.secondary.opacity(0.6))
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(NSColor.controlBackgroundColor))
+            }
+        }
+        .task(id: item.id) {
+            if loadedImage == nil {
+                if let image = await thumbnailManager.loadThumbnail(for: item) {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        self.loadedImage = image
+                    }
+                }
+            }
+        }
     }
 }

@@ -195,10 +195,19 @@ public struct AddWallpaperSheet: View {
             do {
                 let meta = try await assetManager.validateVideo(at: fileURL)
                 let title = fileURL.deletingPathExtension().lastPathComponent
+                let itemId = UUID()
+                
+                // Extract video frame thumbnail immediately
+                let thumbDir = ThumbnailManager.shared.thumbnailsDirectory
+                let thumbURL = thumbDir.appendingPathComponent("\(itemId.uuidString).jpg")
+                let generatedThumbURL = try? await assetManager.generateThumbnail(for: fileURL, at: thumbURL)
+
                 let item = WallpaperItem(
+                    id: itemId,
                     title: title,
                     type: .video,
                     sourceURL: fileURL,
+                    thumbnailURL: generatedThumbURL,
                     duration: meta.durationSeconds
                 )
                 await MainActor.run {
@@ -229,10 +238,22 @@ public struct AddWallpaperSheet: View {
         do {
             let meta = try assetManager.validateWebDirectory(at: folderURL)
             let title = meta.title ?? folderURL.lastPathComponent
+
+            // Check for existing thumbnail file in web directory
+            var thumbURL: URL? = nil
+            for name in ["thumbnail.jpg", "thumbnail.png", "preview.jpg", "preview.png"] {
+                let candidate = folderURL.appendingPathComponent(name)
+                if FileManager.default.fileExists(atPath: candidate.path) {
+                    thumbURL = candidate
+                    break
+                }
+            }
+
             let item = WallpaperItem(
                 title: title,
                 type: .web,
-                sourceURL: folderURL
+                sourceURL: folderURL,
+                thumbnailURL: thumbURL
             )
             onAdd(item)
             dismiss()

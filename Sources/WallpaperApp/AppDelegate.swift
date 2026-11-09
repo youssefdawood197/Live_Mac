@@ -60,10 +60,16 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
         // 6. Asynchronous first-launch setup & library provisioning
         Task {
             await initializeLibraryAndPlayback()
+            showManagerWindow()
         }
 
         // 7. Start power & fullscreen monitoring
         powerManager.startMonitoring()
+    }
+
+    public func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        showManagerWindow()
+        return true
     }
 
     public func applicationWillTerminate(_ notification: Notification) {
@@ -107,6 +113,9 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
                 appState.setActiveWallpaper(active)
                 windowManager.setWallpaper(active)
             }
+
+            // Asynchronously resolve, extract, and backfill thumbnails for all wallpapers
+            await ThumbnailManager.shared.backfillThumbnails(for: appState.wallpapers, library: library, appState: appState)
         } catch {
             print("[LivelyWallpaper] Initialization error: \(error)")
         }
