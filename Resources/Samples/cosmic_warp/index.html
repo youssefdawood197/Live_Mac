@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cosmic Warp Speed - 4K Live Wallpaper</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #03050d; user-select: none; -webkit-user-select: none;
+    }
+    canvas {
+      display: block; width: 100vw; height: 100vh;
+      position: absolute; top: 0; left: 0;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="warpCanvas"></canvas>
+  <script>
+    (function() {
+      const canvas = document.getElementById('warpCanvas');
+      const ctx = canvas.getContext('2d');
+      let width, height, dpr;
+      let cx, cy;
+      const starCount = 700;
+      const stars = [];
+
+      let mouseX = 0, mouseY = 0;
+      let targetX = 0, targetY = 0;
+
+      class Star {
+        constructor() {
+          this.reset(true);
+        }
+        reset(randomZ = false) {
+          this.x = (Math.random() - 0.5) * width * 2;
+          this.y = (Math.random() - 0.5) * height * 2;
+          this.z = randomZ ? Math.random() * width : width;
+          this.pz = this.z;
+          this.speed = Math.random() * 8 + 12;
+          this.hue = Math.random() > 0.8 ? (Math.random() * 60 + 200) : 0; // Blue/Cyan or White
+        }
+        update() {
+          this.pz = this.z;
+          this.z -= this.speed;
+
+          if (this.z <= 0) {
+            this.reset(false);
+          }
+        }
+        draw() {
+          const k = 280;
+          const sx = (this.x / this.z) * k + cx + mouseX * (1 - this.z / width);
+          const sy = (this.y / this.z) * k + cy + mouseY * (1 - this.z / width);
+
+          const px = (this.x / this.pz) * k + cx + mouseX * (1 - this.pz / width);
+          const py = (this.y / this.pz) * k + cy + mouseY * (1 - this.pz / width);
+
+          if (sx < 0 || sx > width || sy < 0 || sy > height) return;
+
+          const size = Math.max(1, (1 - this.z / width) * 4);
+          const alpha = Math.min(1, (1 - this.z / width) * 1.5);
+
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          ctx.lineTo(sx, sy);
+
+          if (this.hue > 0) {
+            ctx.strokeStyle = `hsla(${this.hue}, 85%, 75%, ${alpha})`;
+          } else {
+            ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+          }
+          ctx.lineWidth = size;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+        }
+      }
+
+      function resize() {
+        dpr = window.devicePixelRatio || 1;
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
+        cx = width / 2;
+        cy = height / 2;
+
+        if (stars.length === 0) {
+          for (let i = 0; i < starCount; i++) {
+            stars.push(new Star());
+          }
+        }
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+
+      window.addEventListener('mousemove', (e) => {
+        targetX = (e.clientX - cx) * 0.2;
+        targetY = (e.clientY - cy) * 0.2;
+      });
+
+      function animate() {
+        // Motion blur trail background
+        ctx.fillStyle = 'rgba(3, 5, 13, 0.22)';
+        ctx.fillRect(0, 0, width, height);
+
+        mouseX += (targetX - mouseX) * 0.05;
+        mouseY += (targetY - mouseY) * 0.05;
+
+        for (let star of stars) {
+          star.update();
+          star.draw();
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      requestAnimationFrame(animate);
+    })();
+  </script>
+</body>
+</html>

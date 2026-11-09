@@ -139,6 +139,71 @@ public final class AssetManager: @unchecked Sendable {
         return (targetVideoURL, targetCanvasDirURL)
     }
 
+    /// Discovers and provisions all bundled sample wallpapers (both 4K videos and interactive 4K web wallpapers).
+    public func ensureAllSamplesExtracted() async throws -> [WallpaperItem] {
+        if !fileManager.fileExists(atPath: baseStorageDirectory.path) {
+            try fileManager.createDirectory(at: baseStorageDirectory, withIntermediateDirectories: true)
+        }
+
+        // 1. First ensure basic video and canvas exist
+        try await ensureDefaultSamplesExtracted()
+
+        // 2. Discover potential sample directories and files from Bundle or local resources
+        var sampleSources: [URL] = []
+        if let bundle = resourceBundle, let bundleSamples = bundle.url(forResource: "Samples", withExtension: nil) {
+            sampleSources.append(bundleSamples)
+        }
+        if let resourceURL = Bundle.main.resourceURL?.appendingPathComponent("Samples") {
+            sampleSources.append(resourceURL)
+        }
+        let localSamples = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("Resources/Samples")
+        sampleSources.append(localSamples)
+
+        // Predefined 4K and sample wallpapers catalog
+        let sampleCatalog: [(filename: String, title: String, type: WallpaperType, desc: String)] = [
+            ("ambient_4k_nebula.mp4", "Deep Space Nebula (4K)", .video, "4K UHD looping ambient cosmic nebula with glowing starlight and volumetric clouds."),
+            ("sample_loop.mp4", "Fluids & Glow (Video)", .video, "Hardware-accelerated looping ambient fluid glow."),
+            ("matrix_rain", "Cyberpunk Matrix Rain (4K)", .web, "High-density 4K digital glyph rain with glowing phosphor trails and interactive ripples."),
+            ("cosmic_warp", "Cosmic Warp Speed (4K)", .web, "4K 3D hyperspace starfield simulation with glowing star streaks and cursor steering."),
+            ("synthwave_sun", "Retro Synthwave Sunset (4K)", .web, "80s Outrun wireframe perspective grid with a pulsing neon sun and starry horizon."),
+            ("aurora_borealis", "Aurora Borealis (4K)", .web, "Atmospheric multi-layered fluid aurora ribbons with shimmering colors and mountain silhouette."),
+            ("constellation", "Neural Constellations (4K)", .web, "High-DPI physics-driven glowing node network forming dynamic constellations."),
+            ("sample_canvas", "Lively Waves (HTML5 Canvas)", .web, "Interactive canvas animation with multi-layered animated waves.")
+        ]
+
+        var createdItems: [WallpaperItem] = []
+
+        for item in sampleCatalog {
+            let targetURL = baseStorageDirectory.appendingPathComponent(item.filename)
+
+            // If not yet in baseStorageDirectory, copy from one of the source locations
+            if !fileManager.fileExists(atPath: targetURL.path) {
+                for sourceDir in sampleSources {
+                    let candidate = sourceDir.appendingPathComponent(item.filename)
+                    if fileManager.fileExists(atPath: candidate.path) {
+                        try? fileManager.copyItem(at: candidate, to: targetURL)
+                        break
+                    }
+                }
+            }
+
+            // If the item exists in storage or was copied, create a WallpaperItem for it
+            if fileManager.fileExists(atPath: targetURL.path) {
+                let wallpaper = WallpaperItem(
+                    title: item.title,
+                    type: item.type,
+                    sourceURL: targetURL,
+                    desc: item.desc,
+                    author: "Lively Mac",
+                    isBundled: true
+                )
+                createdItems.append(wallpaper)
+            }
+        }
+
+        return createdItems
+    }
+
     // MARK: - Validation
 
     /// Validates an MP4/MOV video file for playable tracks and dimensions.

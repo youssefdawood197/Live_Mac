@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retro Synthwave Sunset - 4K Live Wallpaper</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #0d0221; user-select: none; -webkit-user-select: none;
+    }
+    canvas {
+      display: block; width: 100vw; height: 100vh;
+      position: absolute; top: 0; left: 0;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="synthwaveCanvas"></canvas>
+  <script>
+    (function() {
+      const canvas = document.getElementById('synthwaveCanvas');
+      const ctx = canvas.getContext('2d');
+      let width, height, dpr;
+      let gridOffset = 0;
+
+      function resize() {
+        dpr = window.devicePixelRatio || 1;
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+
+      function drawSun(horizon) {
+        const radius = Math.min(width, height) * 0.22;
+        const sunX = width / 2;
+        const sunY = horizon - radius * 0.45;
+
+        // Outer glow
+        const glowGrad = ctx.createRadialGradient(sunX, sunY, radius * 0.2, sunX, sunY, radius * 1.8);
+        glowGrad.addColorStop(0, 'rgba(255, 110, 199, 0.45)');
+        glowGrad.addColorStop(0.5, 'rgba(255, 30, 86, 0.2)');
+        glowGrad.addColorStop(1, 'rgba(13, 2, 33, 0)');
+        ctx.fillStyle = glowGrad;
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, radius * 1.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Sun disc gradient (yellow to hot magenta)
+        const sunGrad = ctx.createLinearGradient(sunX, sunY - radius, sunX, sunY + radius);
+        sunGrad.addColorStop(0, '#fef08a');
+        sunGrad.addColorStop(0.5, '#f43f5e');
+        sunGrad.addColorStop(1, '#a855f7');
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, radius, 0, Math.PI * 2);
+        ctx.fillStyle = sunGrad;
+        ctx.fill();
+
+        // Horizontal synthwave blind slices
+        const stripeCount = 10;
+        for (let i = 0; i < stripeCount; i++) {
+          const sliceHeight = (i * 2.2) + 1.5;
+          const sliceY = sunY + (radius * 0.15) + (i * (radius * 0.08));
+          if (sliceY < sunY + radius) {
+            ctx.fillStyle = '#0d0221';
+            ctx.fillRect(sunX - radius, sliceY, radius * 2, sliceHeight);
+          }
+        }
+        ctx.restore();
+      }
+
+      function drawGrid(horizon) {
+        gridOffset = (gridOffset + 1.2) % 40;
+
+        // Perspective vertical lines
+        const lineCount = 28;
+        ctx.strokeStyle = 'rgba(236, 72, 153, 0.55)';
+        ctx.lineWidth = 1.5;
+
+        for (let i = -lineCount; i <= lineCount; i++) {
+          const startX = width / 2 + (i * 12);
+          const endX = width / 2 + (i * 110);
+          ctx.beginPath();
+          ctx.moveTo(startX, horizon);
+          ctx.lineTo(endX, height);
+          ctx.stroke();
+        }
+
+        // Horizontal perspective lines
+        for (let y = horizon; y < height; y += 4) {
+          const progress = (y - horizon) / (height - horizon);
+          const exponentialY = horizon + Math.pow(progress, 2.2) * (height - horizon);
+          const movingY = exponentialY + (gridOffset * progress * 0.8);
+
+          if (movingY >= horizon && movingY <= height) {
+            ctx.strokeStyle = `rgba(34, 211, 238, ${Math.min(0.8, progress * 0.9)})`;
+            ctx.lineWidth = 1 + progress * 2;
+            ctx.beginPath();
+            ctx.moveTo(0, movingY);
+            ctx.lineTo(width, movingY);
+            ctx.stroke();
+          }
+        }
+      }
+
+      function animate() {
+        // Clear sky with gradient
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, height * 0.65);
+        skyGrad.addColorStop(0, '#0f051d');
+        skyGrad.addColorStop(0.7, '#240046');
+        skyGrad.addColorStop(1, '#5a189a');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, width, height);
+
+        const horizon = height * 0.65;
+
+        drawSun(horizon);
+        drawGrid(horizon);
+
+        requestAnimationFrame(animate);
+      }
+
+      requestAnimationFrame(animate);
+    })();
+  </script>
+</body>
+</html>

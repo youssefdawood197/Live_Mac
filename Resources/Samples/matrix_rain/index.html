@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyberpunk Matrix Rain - 4K Live Wallpaper</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #040806; user-select: none; -webkit-user-select: none;
+    }
+    canvas {
+      display: block; width: 100vw; height: 100vh;
+      position: absolute; top: 0; left: 0;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrixCanvas"></canvas>
+  <script>
+    (function() {
+      const canvas = document.getElementById('matrixCanvas');
+      const ctx = canvas.getContext('2d');
+      let width, height, dpr;
+      let columns, drops, speeds, fontSizes;
+      const chars = "ｦｱｳｴｵｶｷｹｺｻｼｽｾｿﾀﾂﾃﾅﾆﾇﾈﾊﾋﾎﾏﾐﾑﾒﾓﾔﾕﾗﾘﾜ1234567890ABCDEF$#@%&*+-=";
+      const mouse = { x: -1000, y: -1000, radius: 180, active: false };
+
+      function resize() {
+        dpr = window.devicePixelRatio || 1;
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
+
+        const baseFontSize = Math.max(14, Math.floor(width / 160));
+        columns = Math.floor(width / baseFontSize);
+        drops = [];
+        speeds = [];
+        fontSizes = [];
+
+        for (let i = 0; i < columns; i++) {
+          drops[i] = Math.random() * -100;
+          speeds[i] = 1.0 + Math.random() * 1.8;
+          fontSizes[i] = baseFontSize;
+        }
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+        mouse.active = true;
+      });
+      window.addEventListener('mouseleave', () => {
+        mouse.active = false;
+      });
+
+      function draw() {
+        // Translucent black fade to create trails
+        ctx.fillStyle = 'rgba(4, 8, 6, 0.08)';
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.font = 'bold 15px monospace';
+
+        for (let i = 0; i < drops.length; i++) {
+          const char = chars[Math.floor(Math.random() * chars.length)];
+          const x = i * (width / columns);
+          const y = drops[i] * 18;
+
+          // Mouse proximity reaction (glows bright cyan/white and repels slightly)
+          const dx = x - mouse.x;
+          const dy = y - mouse.y;
+          const dist = Math.hypot(dx, dy);
+
+          if (mouse.active && dist < mouse.radius) {
+            ctx.fillStyle = '#bbf7d0';
+            ctx.shadowColor = '#4ade80';
+            ctx.shadowBlur = 12;
+            ctx.fillText(char, x, y);
+            ctx.shadowBlur = 0;
+          } else {
+            // Leading character is bright green/white
+            if (Math.random() > 0.88) {
+              ctx.fillStyle = '#86efac';
+              ctx.shadowColor = '#22c55e';
+              ctx.shadowBlur = 8;
+            } else {
+              ctx.fillStyle = '#16a34a';
+              ctx.shadowBlur = 0;
+            }
+            ctx.fillText(char, x, y);
+          }
+
+          if (y > height && Math.random() > 0.975) {
+            drops[i] = 0;
+          }
+          drops[i] += speeds[i];
+        }
+
+        requestAnimationFrame(draw);
+      }
+
+      requestAnimationFrame(draw);
+    })();
+  </script>
+</body>
+</html>

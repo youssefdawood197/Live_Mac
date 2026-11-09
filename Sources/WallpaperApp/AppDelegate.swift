@@ -76,33 +76,28 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
 
     private func initializeLibraryAndPlayback() async {
         do {
-            // Ensure sample assets exist (MP4 loop and HTML5 Canvas)
-            let (sampleVideo, sampleCanvas) = try await assetManager.ensureDefaultSamplesExtracted()
+            // Provision all 4K and sample wallpapers
+            let extractedSamples = try await assetManager.ensureAllSamplesExtracted()
 
             // Load saved wallpapers from disk
             var saved = try await library.loadWallpapers()
 
             if saved.isEmpty {
-                // Populate default samples on first run
-                let videoItem = WallpaperItem(
-                    title: "Fluids & Glow (Video)",
-                    type: .video,
-                    sourceURL: sampleVideo,
-                    desc: "Hardware-accelerated looping ambient video.",
-                    author: "Lively Mac"
-                )
-                let canvasItem = WallpaperItem(
-                    title: "Lively Waves (HTML5 Canvas)",
-                    type: .web,
-                    sourceURL: sampleCanvas,
-                    desc: "Interactive canvas animation with animated waves.",
-                    author: "Lively Mac"
-                )
-
-                try await library.add(videoItem)
-                try await library.add(canvasItem)
+                // Populate default samples into library on first run
+                for item in extractedSamples {
+                    try await library.add(item)
+                }
                 try await library.save()
-                saved = [videoItem, canvasItem]
+                saved = extractedSamples
+            } else {
+                // Ensure any newly added bundled samples are integrated
+                for item in extractedSamples {
+                    if !saved.contains(where: { $0.title == item.title }) {
+                        try? await library.add(item)
+                        saved.append(item)
+                    }
+                }
+                try? await library.save()
             }
 
             self.appState.setWallpapers(saved)

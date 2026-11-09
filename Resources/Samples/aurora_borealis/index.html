@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aurora Borealis - 4K Live Wallpaper</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #020617; user-select: none; -webkit-user-select: none;
+    }
+    canvas {
+      display: block; width: 100vw; height: 100vh;
+      position: absolute; top: 0; left: 0;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="auroraCanvas"></canvas>
+  <script>
+    (function() {
+      const canvas = document.getElementById('auroraCanvas');
+      const ctx = canvas.getContext('2d');
+      let width, height, dpr;
+      let tick = 0;
+
+      const stars = [];
+      for (let i = 0; i < 200; i++) {
+        stars.push({
+          x: Math.random(),
+          y: Math.random() * 0.7,
+          size: Math.random() * 2 + 0.5,
+          alpha: Math.random() * 0.8 + 0.2
+        });
+      }
+
+      function resize() {
+        dpr = window.devicePixelRatio || 1;
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+
+      function drawAuroraRibbon(baseY, amp, freq, speed, color1, color2) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+
+        const grad = ctx.createLinearGradient(0, baseY - amp * 2.5, 0, baseY + amp * 1.5);
+        grad.addColorStop(0, 'rgba(0,0,0,0)');
+        grad.addColorStop(0.3, color1);
+        grad.addColorStop(0.7, color2);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(0, height);
+        ctx.lineTo(0, baseY);
+
+        const step = 20;
+        for (let x = 0; x <= width + step; x += step) {
+          const y = baseY +
+            Math.sin(x * freq + tick * speed) * amp +
+            Math.sin(x * freq * 0.5 + tick * speed * 1.4) * (amp * 0.6);
+          ctx.lineTo(x, y);
+        }
+
+        ctx.lineTo(width, height);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function drawMountains() {
+        ctx.fillStyle = '#010409';
+        ctx.beginPath();
+        ctx.moveTo(0, height);
+        ctx.lineTo(0, height * 0.82);
+
+        const peaks = [
+          [0.15, 0.75], [0.35, 0.84], [0.52, 0.72],
+          [0.68, 0.81], [0.85, 0.74], [1.0, 0.82]
+        ];
+
+        for (let p of peaks) {
+          ctx.lineTo(width * p[0], height * p[1]);
+        }
+        ctx.lineTo(width, height);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function animate() {
+        // Deep night sky gradient
+        const sky = ctx.createLinearGradient(0, 0, 0, height);
+        sky.addColorStop(0, '#020617');
+        sky.addColorStop(0.6, '#06202a');
+        sky.addColorStop(1, '#020617');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, width, height);
+
+        // Stars
+        for (let s of stars) {
+          ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha * (0.6 + 0.4 * Math.sin(tick * 0.05 + s.x * 10))})`;
+          ctx.fillRect(s.x * width, s.y * height, s.size, s.size);
+        }
+
+        // Aurora layers
+        tick += 0.02;
+        drawAuroraRibbon(height * 0.38, 70, 0.003, 0.8, 'rgba(34, 197, 94, 0.45)', 'rgba(6, 182, 212, 0.3)');
+        drawAuroraRibbon(height * 0.44, 90, 0.0025, 0.6, 'rgba(168, 85, 247, 0.4)', 'rgba(56, 189, 248, 0.35)');
+        drawAuroraRibbon(height * 0.50, 60, 0.004, 1.1, 'rgba(16, 185, 129, 0.5)', 'rgba(147, 51, 234, 0.25)');
+
+        drawMountains();
+
+        requestAnimationFrame(animate);
+      }
+
+      requestAnimationFrame(animate);
+    })();
+  </script>
+</body>
+</html>

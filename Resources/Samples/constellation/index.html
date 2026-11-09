@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neural Constellations - 4K Live Wallpaper</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #090d16; user-select: none; -webkit-user-select: none;
+    }
+    canvas {
+      display: block; width: 100vw; height: 100vh;
+      position: absolute; top: 0; left: 0;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="constellationCanvas"></canvas>
+  <script>
+    (function() {
+      const canvas = document.getElementById('constellationCanvas');
+      const ctx = canvas.getContext('2d');
+      let width, height, dpr;
+      const nodeCount = 130;
+      const nodes = [];
+      const mouse = { x: null, y: null, radius: 220, active: false };
+
+      class Node {
+        constructor() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.vx = (Math.random() - 0.5) * 0.9;
+          this.vy = (Math.random() - 0.5) * 0.9;
+          this.radius = Math.random() * 2.2 + 1.2;
+          this.baseColor = Math.random() > 0.4 ? 'rgba(56, 189, 248, ' : 'rgba(168, 85, 247, ';
+        }
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+
+          if (this.x < 0 || this.x > width) this.vx *= -1;
+          if (this.y < 0 || this.y > height) this.vy *= -1;
+
+          // Mouse gravity
+          if (mouse.active && mouse.x !== null) {
+            const dx = mouse.x - this.x;
+            const dy = mouse.y - this.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < mouse.radius && dist > 0) {
+              const force = (mouse.radius - dist) / mouse.radius;
+              this.x += (dx / dist) * force * 2.5;
+              this.y += (dy / dist) * force * 2.5;
+            }
+          }
+        }
+        draw() {
+          ctx.fillStyle = this.baseColor + '0.85)';
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      function resize() {
+        dpr = window.devicePixelRatio || 1;
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
+
+        if (nodes.length === 0) {
+          for (let i = 0; i < nodeCount; i++) {
+            nodes.push(new Node());
+          }
+        }
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+        mouse.active = true;
+      });
+      window.addEventListener('mouseleave', () => {
+        mouse.active = false;
+      });
+
+      function animate() {
+        ctx.fillStyle = 'rgba(9, 13, 22, 0.28)';
+        ctx.fillRect(0, 0, width, height);
+
+        // Update & Draw Nodes
+        for (let i = 0; i < nodes.length; i++) {
+          nodes[i].update();
+          nodes[i].draw();
+
+          // Connect nearby nodes
+          for (let j = i + 1; j < nodes.length; j++) {
+            const dx = nodes[i].x - nodes[j].x;
+            const dy = nodes[i].y - nodes[j].y;
+            const dist = Math.hypot(dx, dy);
+            const maxDist = 130;
+
+            if (dist < maxDist) {
+              const alpha = (1 - dist / maxDist) * 0.45;
+              ctx.strokeStyle = `rgba(125, 211, 252, ${alpha})`;
+              ctx.lineWidth = 0.8;
+              ctx.beginPath();
+              ctx.moveTo(nodes[i].x, nodes[i].y);
+              ctx.lineTo(nodes[j].x, nodes[j].y);
+              ctx.stroke();
+            }
+          }
+
+          // Connect to mouse cursor
+          if (mouse.active && mouse.x !== null) {
+            const dx = nodes[i].x - mouse.x;
+            const dy = nodes[i].y - mouse.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < mouse.radius) {
+              const alpha = (1 - dist / mouse.radius) * 0.75;
+              ctx.strokeStyle = `rgba(236, 72, 153, ${alpha})`;
+              ctx.lineWidth = 1.2;
+              ctx.beginPath();
+              ctx.moveTo(nodes[i].x, nodes[i].y);
+              ctx.lineTo(mouse.x, mouse.y);
+              ctx.stroke();
+            }
+          }
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      requestAnimationFrame(animate);
+    })();
+  </script>
+</body>
+</html>
