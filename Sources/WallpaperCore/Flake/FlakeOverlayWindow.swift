@@ -75,7 +75,20 @@ public final class FlakeOverlayWindow: NSWindow {
         flakeScene.size = newFrame.size
     }
 
-    // MARK: - Mouse Event Handling for Mitten & Shovel Tools
+    // MARK: - Mouse Event Handling for Mitten, Shovel & Snowman Tools
+
+    public override func mouseDown(with event: NSEvent) {
+        guard flakeScene.config.activeTool != .none else {
+            super.mouseDown(with: event)
+            return
+        }
+        let location = event.locationInWindow
+        if flakeScene.config.activeTool == .snowman {
+            flakeScene.buildSnowmanAtPoint(location)
+        } else {
+            flakeScene.clearSnowAtPoint(location, radius: flakeScene.config.activeTool == .shovel ? 60 : 40)
+        }
+    }
 
     public override func mouseMoved(with event: NSEvent) {
         guard flakeScene.config.activeTool != .none else {

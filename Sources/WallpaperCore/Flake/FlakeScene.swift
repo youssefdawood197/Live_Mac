@@ -33,6 +33,7 @@ public final class FlakeScene: SKScene {
 
     /// Fairy light nodes: [SurfaceID : [SKNode]]
     private var fairyLightNodes: [CGWindowID: [SKNode]] = [:]
+    private var snowmanNodes: [SKNode] = []
 
     /// Snow particle emitter node
     public private(set) var emitterNode: SKEmitterNode?
@@ -506,6 +507,77 @@ public final class FlakeScene: SKScene {
 
     // MARK: - Interactive Mitten & Shovel Clearing
 
+    public func buildSnowmanAtPoint(_ point: CGPoint) {
+        let snowman = SKNode()
+        snowman.position = point
+        snowman.zPosition = 25
+
+        // Bottom ball
+        let bottom = SKShapeNode(circleOfRadius: 14)
+        bottom.fillColor = NSColor.white
+        bottom.strokeColor = NSColor.systemGray.withAlphaComponent(0.4)
+        bottom.position = CGPoint(x: 0, y: 14)
+        snowman.addChild(bottom)
+
+        // Middle ball
+        let middle = SKShapeNode(circleOfRadius: 10)
+        middle.fillColor = NSColor.white
+        middle.strokeColor = NSColor.systemGray.withAlphaComponent(0.4)
+        middle.position = CGPoint(x: 0, y: 32)
+        snowman.addChild(middle)
+
+        // Scarf
+        let scarf = SKShapeNode(rectOf: CGSize(width: 16, height: 4), cornerRadius: 1)
+        scarf.fillColor = NSColor.systemRed
+        scarf.position = CGPoint(x: 0, y: 40)
+        snowman.addChild(scarf)
+
+        // Head
+        let head = SKShapeNode(circleOfRadius: 7)
+        head.fillColor = NSColor.white
+        head.strokeColor = NSColor.systemGray.withAlphaComponent(0.4)
+        head.position = CGPoint(x: 0, y: 46)
+        snowman.addChild(head)
+
+        // Eyes
+        let leftEye = SKShapeNode(circleOfRadius: 1)
+        leftEye.fillColor = NSColor.black
+        leftEye.position = CGPoint(x: -2.5, y: 48)
+        snowman.addChild(leftEye)
+
+        let rightEye = SKShapeNode(circleOfRadius: 1)
+        rightEye.fillColor = NSColor.black
+        rightEye.position = CGPoint(x: 2.5, y: 48)
+        snowman.addChild(rightEye)
+
+        // Carrot nose
+        let nose = SKShapeNode(rectOf: CGSize(width: 4, height: 1.5), cornerRadius: 0.5)
+        nose.fillColor = NSColor.systemOrange
+        nose.position = CGPoint(x: 2, y: 45.5)
+        snowman.addChild(nose)
+
+        // Top hat
+        let brim = SKShapeNode(rectOf: CGSize(width: 16, height: 2), cornerRadius: 0.5)
+        brim.fillColor = NSColor.black
+        brim.position = CGPoint(x: 0, y: 53)
+        snowman.addChild(brim)
+
+        let hatCrown = SKShapeNode(rectOf: CGSize(width: 10, height: 9), cornerRadius: 1)
+        hatCrown.fillColor = NSColor.black
+        hatCrown.position = CGPoint(x: 0, y: 58)
+        snowman.addChild(hatCrown)
+
+        snowman.setScale(0.1)
+        addChild(snowman)
+        snowmanNodes.append(snowman)
+
+        let popAnimation = SKAction.sequence([
+            SKAction.scale(to: 1.15, duration: 0.15),
+            SKAction.scale(to: 1.0, duration: 0.1)
+        ])
+        snowman.run(popAnimation)
+    }
+
     public func clearSnowAtPoint(_ point: CGPoint, radius: CGFloat = 45) {
         for (id, var heightmap) in heightmaps {
             guard let surface = surfacesList.first(where: { $0.id == id }) else { continue }
@@ -531,6 +603,15 @@ public final class FlakeScene: SKScene {
             ]))
         }
         snowbankNodes.removeAll()
+
+        for snowman in snowmanNodes {
+            snowman.run(SKAction.sequence([
+                SKAction.fadeOut(withDuration: 0.3),
+                SKAction.removeFromParent()
+            ]))
+        }
+        snowmanNodes.removeAll()
+
         for (id, var map) in heightmaps {
             map.bins = Array(repeating: 0.0, count: map.bins.count)
             heightmaps[id] = map
