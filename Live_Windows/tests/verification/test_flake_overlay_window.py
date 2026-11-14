@@ -52,6 +52,7 @@ class InteractiveTool(Enum):
     NoneTool = 0
     Mitten = 1
     Shovel = 2
+    Snowman = 3
 
 
 class MockFlakeOverlayWindow:
@@ -182,6 +183,30 @@ class TestFlakeOverlayWindow(unittest.TestCase):
         # All other 4 styles must remain active
         self.assertTrue(window.ex_style & WindowExStyle.WS_EX_TOPMOST)
         self.assertTrue(window.ex_style & WindowExStyle.WS_EX_TOOLWINDOW)
+        self.assertTrue(window.ex_style & WindowExStyle.WS_EX_LAYERED)
+        self.assertTrue(window.ex_style & WindowExStyle.WS_EX_NOACTIVATE)
+
+        # Exact expected bitmask without WS_EX_TRANSPARENT (0x00000020)
+        self.assertEqual(window.ex_style, initial_ex & ~WindowExStyle.WS_EX_TRANSPARENT)
+        self.assertEqual(window.ex_style, 0x08080088)
+
+    def test_dynamic_clickthrough_toggle_snowman(self):
+        """Switching to Snowman tool removes WS_EX_TRANSPARENT without mutating other styles."""
+        window = MockFlakeOverlayWindow()
+        initial_ex = window.ex_style
+
+        # Activate Snowman builder
+        window.set_interactive_tool(InteractiveTool.Snowman)
+
+        # WS_EX_TRANSPARENT must be cleared
+        self.assertFalse(window.ex_style & WindowExStyle.WS_EX_TRANSPARENT)
+
+        # All other 4 styles must remain active
+        self.assertTrue(window.ex_style & WindowExStyle.WS_EX_TOPMOST)
+        self.assertTrue(window.ex_style & WindowExStyle.WS_EX_TOOLWINDOW)
+        self.assertTrue(window.ex_style & WindowExStyle.WS_EX_LAYERED)
+        self.assertTrue(window.ex_style & WindowExStyle.WS_EX_NOACTIVATE)
+        self.assertEqual(window.ex_style, initial_ex & ~WindowExStyle.WS_EX_TRANSPARENT)
         self.assertTrue(window.ex_style & WindowExStyle.WS_EX_LAYERED)
         self.assertTrue(window.ex_style & WindowExStyle.WS_EX_NOACTIVATE)
 
