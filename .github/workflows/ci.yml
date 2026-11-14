@@ -41,12 +41,17 @@ jobs:
             build/LivelyWallpaper.app
             build/LivelyWallpaper.dmg
 
-  windows-verification:
-    name: Windows Scaffolding & Challenger Verification
-    runs-on: ubuntu-latest
+  windows-ci:
+    name: Windows CI & Verification
+    runs-on: windows-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -54,4 +59,10 @@ jobs:
           python-version: '3.11'
 
       - name: Run Windows Challenger Test Suite
-        run: python3 Live_Windows/tests/verification/run_all_challenges.py
+        run: python Live_Windows/tests/verification/run_all_challenges.py
+
+      - name: Restore Live.Core Tests
+        run: dotnet restore Live_Windows/tests/Live.Core.Tests/Live.Core.Tests.csproj
+
+      - name: Run Windows Core Unit Tests
+        run: dotnet test Live_Windows/tests/Live.Core.Tests/Live.Core.Tests.csproj -c Release
