@@ -256,10 +256,17 @@ dotnet run --project src/Live.App/Live.App.csproj -c Debug
 dotnet publish src/Live.App/Live.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
 ```
 
-### 6.3 Cross-Platform Validation (macOS / Linux Host)
+### 6.3 Build Installer (`.exe`)
+To publish the self-contained application and compile the Inno Setup installer executable:
+```powershell
+powershell -ExecutionPolicy Bypass -File installer/build_installer.ps1 -Configuration Release
+```
+This produces a standalone, compressed setup installer at `bin/installer/LivelyWallpaper-Windows-Setup-x64.exe` with desktop shortcut and startup launch options.
+
+### 6.4 Cross-Platform Validation (macOS / Linux Host)
 If developing or reviewing on a macOS or Linux machine where the `dotnet` CLI is not installed:
 ```bash
-# Validate solution structure, XML syntax, GUIDs, and project reference integrity
-python3 .agents/teamwork/teamwork_explorer_m4_1/validate_windows_scaffolding.py Live_Windows
+# Validate solution structure, interop bitmasks, DWM queries, and JSON serialization
+python3 tests/verification/run_all_challenges.py
 ```
-This validation suite executes 100% offline using standard Python 3 and XML parsers to verify that all solution files, project dependencies, and compiler settings are valid.
+This validation suite executes 100% offline using standard Python 3 to verify that all solution files, project dependencies, Win32 extended styles, Progman handshakes, and compiler settings are valid.
