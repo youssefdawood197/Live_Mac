@@ -349,21 +349,7 @@ public final class FlakeScene: SKScene {
         guard !isSnowplowActive else { return }
         isSnowplowActive = true
 
-        let plow = SKNode()
-        let bodyNode = SKShapeNode(rectOf: CGSize(width: 44, height: 26), cornerRadius: 5)
-        bodyNode.fillColor = NSColor.systemYellow
-        bodyNode.strokeColor = NSColor.black.withAlphaComponent(0.4)
-        plow.addChild(bodyNode)
-
-        let cab = SKShapeNode(rectOf: CGSize(width: 18, height: 14), cornerRadius: 2)
-        cab.fillColor = NSColor.systemBlue.withAlphaComponent(0.7)
-        cab.position = CGPoint(x: -6, y: 5)
-        plow.addChild(cab)
-
-        let blade = SKShapeNode(rectOf: CGSize(width: 8, height: 28), cornerRadius: 2)
-        blade.fillColor = NSColor.darkGray
-        blade.position = CGPoint(x: 22, y: -2)
-        plow.addChild(blade)
+        let plow = createPlowNode()
 
         plow.position = CGPoint(x: -60, y: 16)
         plow.zPosition = 30
@@ -384,6 +370,95 @@ public final class FlakeScene: SKScene {
         }
 
         plow.run(SKAction.sequence([moveRight, remove]))
+    }
+
+    private func createPlowNode() -> SKNode {
+        let plow = SKNode()
+
+        switch config.snowplowModel {
+        case .custom:
+            if let url = config.customPlowImageURL,
+               let image = NSImage(contentsOf: url) {
+                let texture = SKTexture(image: image)
+                let sprite = SKSpriteNode(texture: texture)
+                let targetHeight: CGFloat = 36
+                let scale = targetHeight / max(image.size.height, 1)
+                sprite.size = CGSize(width: image.size.width * scale, height: targetHeight)
+                plow.addChild(sprite)
+                return plow
+            }
+            fallthrough
+
+        case .classicTractor:
+            let bodyNode = SKShapeNode(rectOf: CGSize(width: 44, height: 26), cornerRadius: 5)
+            bodyNode.fillColor = NSColor.systemYellow
+            bodyNode.strokeColor = NSColor.black.withAlphaComponent(0.4)
+            plow.addChild(bodyNode)
+
+            let cab = SKShapeNode(rectOf: CGSize(width: 18, height: 14), cornerRadius: 2)
+            cab.fillColor = NSColor.systemBlue.withAlphaComponent(0.7)
+            cab.position = CGPoint(x: -6, y: 5)
+            plow.addChild(cab)
+
+            let blade = SKShapeNode(rectOf: CGSize(width: 8, height: 28), cornerRadius: 2)
+            blade.fillColor = NSColor.darkGray
+            blade.position = CGPoint(x: 22, y: -2)
+            plow.addChild(blade)
+
+        case .vintageTractor:
+            let bodyNode = SKShapeNode(rectOf: CGSize(width: 46, height: 24), cornerRadius: 6)
+            bodyNode.fillColor = NSColor(calibratedRed: 0.15, green: 0.45, blue: 0.2, alpha: 1.0)
+            bodyNode.strokeColor = NSColor.black.withAlphaComponent(0.4)
+            plow.addChild(bodyNode)
+
+            let chimney = SKShapeNode(rectOf: CGSize(width: 5, height: 14), cornerRadius: 1)
+            chimney.fillColor = NSColor.black
+            chimney.position = CGPoint(x: 14, y: 14)
+            plow.addChild(chimney)
+
+            let blade = SKShapeNode(rectOf: CGSize(width: 8, height: 28), cornerRadius: 2)
+            blade.fillColor = NSColor.systemRed
+            blade.position = CGPoint(x: 23, y: -2)
+            plow.addChild(blade)
+
+        case .snowmobile:
+            let chassis = SKShapeNode(rectOf: CGSize(width: 48, height: 18), cornerRadius: 8)
+            chassis.fillColor = NSColor.systemRed
+            chassis.strokeColor = NSColor.black.withAlphaComponent(0.4)
+            plow.addChild(chassis)
+
+            let ski = SKShapeNode(rectOf: CGSize(width: 24, height: 4), cornerRadius: 2)
+            ski.fillColor = NSColor.lightGray
+            ski.position = CGPoint(x: 16, y: -10)
+            plow.addChild(ski)
+
+            let windshield = SKShapeNode(rectOf: CGSize(width: 12, height: 12), cornerRadius: 3)
+            windshield.fillColor = NSColor.cyan.withAlphaComponent(0.6)
+            windshield.position = CGPoint(x: 4, y: 8)
+            plow.addChild(windshield)
+
+        case .penguin:
+            let body = SKShapeNode(ellipseOf: CGSize(width: 24, height: 32))
+            body.fillColor = NSColor.black
+            plow.addChild(body)
+
+            let belly = SKShapeNode(ellipseOf: CGSize(width: 14, height: 22))
+            belly.fillColor = NSColor.white
+            belly.position = CGPoint(x: 2, y: -2)
+            plow.addChild(belly)
+
+            let beak = SKShapeNode(rectOf: CGSize(width: 8, height: 4), cornerRadius: 1)
+            beak.fillColor = NSColor.systemOrange
+            beak.position = CGPoint(x: 12, y: 8)
+            plow.addChild(beak)
+
+            let shovel = SKShapeNode(rectOf: CGSize(width: 6, height: 24), cornerRadius: 2)
+            shovel.fillColor = NSColor.systemBlue
+            shovel.position = CGPoint(x: 16, y: -4)
+            plow.addChild(shovel)
+        }
+
+        return plow
     }
 
     // MARK: - Window Fairy Lights

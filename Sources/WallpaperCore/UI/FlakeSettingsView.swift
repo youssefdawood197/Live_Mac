@@ -92,6 +92,34 @@ public struct FlakeSettingsView: View {
                                 Label(model.rawValue, systemImage: model.iconName).tag(model)
                             }
                         }
+
+                        if appState.flakeConfig.snowplowModel == .custom {
+                            HStack {
+                                if let customURL = appState.flakeConfig.customPlowImageURL {
+                                    Text(customURL.lastPathComponent)
+                                        .font(.system(size: 11))
+                                        .foregroundColor(.secondary)
+                                        .lineLimit(1)
+                                } else {
+                                    Text("No image selected")
+                                        .font(.system(size: 11))
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                                Button("Choose Image...") {
+                                    let panel = NSOpenPanel()
+                                    panel.allowedContentTypes = [.image, .png, .jpeg]
+                                    panel.allowsMultipleSelection = false
+                                    panel.canChooseDirectories = false
+                                    if panel.runModal() == .OK, let url = panel.url {
+                                        appState.flakeConfig.customPlowImageURL = url
+                                    }
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                            }
+                            .padding(.vertical, 2)
+                        }
                     }
                 }
 
