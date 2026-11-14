@@ -82,6 +82,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
         // 6. Asynchronous first-launch setup & library provisioning
         Task {
             await initializeLibraryAndPlayback()
+            parseCommandLineArguments()
             showManagerWindow()
         }
 
@@ -153,6 +154,58 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
     ) {
         windowManager.setPaused(isPaused)
         flakeController?.setPaused(isPaused)
+    }
+
+    // MARK: - Command Line Arguments
+
+    private func parseCommandLineArguments() {
+        let args = CommandLine.arguments
+
+        if args.contains("--pause") {
+            appState.isPaused = true
+            windowManager.setPaused(true)
+        } else if args.contains("--play") {
+            appState.isPaused = false
+            windowManager.setPaused(false)
+        }
+
+        if args.contains("--mute") {
+            appState.isMuted = true
+            windowManager.setMuted(true)
+        } else if args.contains("--unmute") {
+            appState.isMuted = false
+            windowManager.setMuted(false)
+        }
+
+        if let idx = args.firstIndex(of: "--interactive"), idx + 1 < args.count {
+            let val = args[idx + 1].lowercased()
+            let enabled = (val == "on" || val == "true" || val == "1")
+            appState.isInteractionModeEnabled = enabled
+            windowManager.isInteractive = enabled
+        }
+
+        if let idx = args.firstIndex(of: "--flake"), idx + 1 < args.count {
+            let val = args[idx + 1].lowercased()
+            appState.flakeConfig.isEnabled = (val == "on" || val == "true" || val == "1")
+            flakeController?.config = appState.flakeConfig
+        }
+
+        if let idx = args.firstIndex(of: "--flake-intensity"), idx + 1 < args.count {
+            let val = args[idx + 1].lowercased()
+            switch val {
+            case "light":
+                appState.flakeConfig.intensity = .light
+            case "blizzard":
+                appState.flakeConfig.intensity = .blizzard
+            default:
+                appState.flakeConfig.intensity = .steady
+            }
+            flakeController?.config = appState.flakeConfig
+        }
+
+        if args.contains("--clear-snow") {
+            flakeController?.clearAllSnow()
+        }
     }
 
     // MARK: - Window Management
