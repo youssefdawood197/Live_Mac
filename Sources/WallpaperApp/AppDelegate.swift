@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import Combine
 import WallpaperCore
 
 @MainActor
@@ -16,6 +17,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
     public private(set) var flakeController: FlakeController!
 
     private var managerWindow: NSWindow?
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Application Lifecycle
 
@@ -52,6 +54,14 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
             powerManager: powerManager
         )
         self.statusItemController.flakeController = flakeController
+
+        // Synchronize AppState FlakeConfiguration mutations with active FlakeController
+        appState.$flakeConfig
+            .dropFirst()
+            .sink { [weak self] newConfig in
+                self?.flakeController?.config = newConfig
+            }
+            .store(in: &cancellables)
 
         // Hook status item callbacks
         statusItemController.onOpenManager = { [weak self] in
@@ -175,6 +185,9 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
                     try? await self.library.add(newItem)
                     try? await self.library.save()
                 }
+            },
+            onClearSnow: { [weak self] in
+                self?.flakeController?.clearAllSnow()
             }
         )
 

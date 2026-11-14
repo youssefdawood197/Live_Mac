@@ -9,6 +9,7 @@ public struct ManagerView: View {
     public var onSelectWallpaper: (WallpaperItem) -> Void
     public var onDeleteWallpaper: ((WallpaperItem) -> Void)?
     public var onAddWallpaper: ((WallpaperItem) -> Void)?
+    public var onClearSnow: (() -> Void)?
 
     public init(
         appState: AppState,
@@ -16,7 +17,8 @@ public struct ManagerView: View {
         powerManager: PowerManagerProtocol? = nil,
         onSelectWallpaper: @escaping (WallpaperItem) -> Void,
         onDeleteWallpaper: ((WallpaperItem) -> Void)? = nil,
-        onAddWallpaper: ((WallpaperItem) -> Void)? = nil
+        onAddWallpaper: ((WallpaperItem) -> Void)? = nil,
+        onClearSnow: (() -> Void)? = nil
     ) {
         self.appState = appState
         self.windowManager = windowManager
@@ -24,6 +26,7 @@ public struct ManagerView: View {
         self.onSelectWallpaper = onSelectWallpaper
         self.onDeleteWallpaper = onDeleteWallpaper
         self.onAddWallpaper = onAddWallpaper
+        self.onClearSnow = onClearSnow
     }
 
     public var body: some View {
@@ -74,7 +77,8 @@ public struct ManagerView: View {
                 )
             case .flake:
                 FlakeSettingsView(
-                    appState: appState
+                    appState: appState,
+                    onClearSnow: onClearSnow
                 )
             case .settings:
                 SettingsView(
