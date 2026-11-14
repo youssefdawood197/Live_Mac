@@ -22,6 +22,7 @@ public struct FlakeSettingsView: View {
                             .font(.system(size: 11))
                             .foregroundColor(.secondary)
                             .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(.vertical, 3)
                 }
@@ -48,30 +49,65 @@ public struct FlakeSettingsView: View {
                     .pickerStyle(.segmented)
                     .padding(.vertical, 2)
 
-                    HStack(alignment: .center, spacing: 24) {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("Wind Direction & Angle")
-                                .font(.system(size: 12, weight: .medium))
-                            Text("Drag the dial or click to steer wind vectors.")
-                                .font(.system(size: 11))
-                                .foregroundColor(.secondary)
+                    ViewThatFits(in: .horizontal) {
+                        // Wide layout: slider and compass side-by-side
+                        HStack(alignment: .center, spacing: 24) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Wind Direction & Angle")
+                                    .font(.system(size: 12, weight: .medium))
+                                Text("Drag the dial or click to steer wind vectors.")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
 
-                            Slider(value: $appState.flakeConfig.windSpeed, in: 0.0...3.0, step: 0.2) {
-                                Text("Wind Speed")
-                            } minimumValueLabel: {
-                                Text("Calm").font(.caption)
-                            } maximumValueLabel: {
-                                Text("Storm").font(.caption)
+                                Slider(value: $appState.flakeConfig.windSpeed, in: 0.0...3.0, step: 0.2) {
+                                    Text("Wind Speed")
+                                } minimumValueLabel: {
+                                    Text("Calm").font(.caption)
+                                } maximumValueLabel: {
+                                    Text("Storm").font(.caption)
+                                }
+                                .padding(.top, 4)
                             }
-                            .padding(.top, 4)
+                            .frame(minWidth: 160)
+
+                            Spacer(minLength: 12)
+
+                            WindCompassView(
+                                windAngleDegrees: $appState.flakeConfig.windAngleDegrees,
+                                windSpeed: $appState.flakeConfig.windSpeed
+                            )
                         }
 
-                        Spacer()
+                        // Compact layout: cleanly stacked vertically to prevent compression
+                        VStack(alignment: .leading, spacing: 14) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Wind Direction & Angle")
+                                    .font(.system(size: 12, weight: .medium))
+                                Text("Drag the dial or click to steer wind vectors.")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
 
-                        WindCompassView(
-                            windAngleDegrees: $appState.flakeConfig.windAngleDegrees,
-                            windSpeed: $appState.flakeConfig.windSpeed
-                        )
+                                Slider(value: $appState.flakeConfig.windSpeed, in: 0.0...3.0, step: 0.2) {
+                                    Text("Wind Speed")
+                                } minimumValueLabel: {
+                                    Text("Calm").font(.caption)
+                                } maximumValueLabel: {
+                                    Text("Storm").font(.caption)
+                                }
+                                .padding(.top, 4)
+                            }
+
+                            HStack {
+                                Spacer()
+                                WindCompassView(
+                                    windAngleDegrees: $appState.flakeConfig.windAngleDegrees,
+                                    windSpeed: $appState.flakeConfig.windSpeed
+                                )
+                                Spacer()
+                            }
+                        }
                     }
                     .padding(.vertical, 4)
                 }
