@@ -4,6 +4,7 @@ import Combine
 /// Navigation sections within the SwiftUI Wallpaper Manager window.
 public enum NavigationTab: String, CaseIterable, Identifiable, Sendable {
     case library = "Library"
+    case flake = "Flake Snow"
     case settings = "Settings"
 
     public var id: String { rawValue }
@@ -17,6 +18,9 @@ public final class AppState: ObservableObject {
     @Published public var isPaused: Bool = false
     @Published public var isMuted: Bool = true
     @Published public var isInteractionModeEnabled: Bool = false
+
+    // MARK: - Flake Ambient Mode State
+    @Published public var flakeConfig: FlakeConfiguration = FlakeConfiguration()
 
     // MARK: - Library & Selection State
     @Published public var wallpapers: [WallpaperItem] = []

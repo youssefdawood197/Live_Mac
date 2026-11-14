@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Live.Engine.Flake</RootNamespace>
+    <AssemblyName>Live.Engine.Flake</AssemblyName>
+    <Description>DirectX Win2D hardware-accelerated Flake snowfall simulation and heightmap accumulation engine</Description>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Live.Core\Live.Core.csproj" />
+    <ProjectReference Include="..\Live.Interop.Win32\Live.Interop.Win32.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.2.0" />
+  </ItemGroup>
+
+</Project>

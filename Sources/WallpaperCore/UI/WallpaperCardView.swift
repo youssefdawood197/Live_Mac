@@ -57,42 +57,50 @@ public struct WallpaperCardView: View {
             )
 
             // MARK: - Metadata
-            VStack(alignment: .leading, spacing: 2) {
-                HStack {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(alignment: .center, spacing: 6) {
                     Text(item.title)
                         .font(.system(size: 13, weight: .semibold))
                         .lineLimit(1)
+                        .truncationMode(.tail)
                         .foregroundColor(.primary)
+                        .layoutPriority(0)
 
-                    Spacer()
+                    Spacer(minLength: 4)
 
                     if isActive {
                         Text("ACTIVE")
                             .font(.system(size: 9, weight: .heavy))
                             .foregroundColor(.accentColor)
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 1)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 2)
                             .background(Color.accentColor.opacity(0.15))
                             .clipShape(Capsule())
+                            .fixedSize()
+                            .layoutPriority(1)
                     }
                 }
 
                 if let author = item.author, !author.isEmpty {
                     Text("by \(author)")
-                        .font(.system(size: 11))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.secondary)
                         .lineLimit(1)
+                        .truncationMode(.tail)
                 }
 
                 if let description = item.desc, !description.isEmpty {
                     Text(description)
                         .font(.system(size: 11))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.secondary.opacity(0.85))
                         .lineLimit(2)
-                        .padding(.top, 1)
+                        .lineSpacing(2.5)
+                        .truncationMode(.tail)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            .padding(.horizontal, 2)
+            .padding(.horizontal, 4)
+            .padding(.bottom, 2)
         }
         .padding(8)
         .background(
@@ -139,11 +147,12 @@ public struct WallpaperCardView: View {
                 .font(.system(size: 9, weight: .bold))
             Text(item.type.displayName)
                 .font(.system(size: 9, weight: .bold))
+                .fixedSize()
         }
         .foregroundColor(.white)
         .padding(.horizontal, 6)
         .padding(.vertical, 3)
-        .background(Color.black.opacity(0.65))
+        .background(Color.black.opacity(0.7))
         .clipShape(Capsule())
     }
 }
@@ -168,13 +177,14 @@ public struct AsyncThumbnailView: View {
                     .clipped()
                     .transition(.opacity.animation(.easeInOut(duration: 0.2)))
             } else {
-                VStack(spacing: 8) {
+                VStack(spacing: 6) {
                     Image(systemName: item.type.sfSymbolName)
-                        .font(.system(size: 36))
+                        .font(.system(size: 32))
                         .foregroundColor(.secondary.opacity(0.6))
                     Text(item.type.displayName)
                         .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.secondary.opacity(0.6))
+                        .fixedSize()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color(NSColor.controlBackgroundColor))

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Live.Engine.Video</RootNamespace>
+    <AssemblyName>Live.Engine.Video</AssemblyName>
+    <Description>Windows Media Foundation hardware-accelerated looping video wallpaper playback engine</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Live.Core\Live.Core.csproj" />
+    <ProjectReference Include="..\Live.Interop.Win32\Live.Interop.Win32.csproj" />
+  </ItemGroup>
+
+</Project>

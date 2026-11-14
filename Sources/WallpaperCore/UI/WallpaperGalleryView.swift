@@ -35,68 +35,41 @@ public struct WallpaperGalleryView: View {
     public var body: some View {
         VStack(spacing: 0) {
             // MARK: - Filter & Search Toolbar
-            HStack(spacing: 12) {
-                // Search Field
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
-                    TextField("Search wallpapers...", text: $appState.searchQuery)
-                        .textFieldStyle(.plain)
-                    if !appState.searchQuery.isEmpty {
-                        Button(action: { appState.searchQuery = "" }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
-                        }
-                        .buttonStyle(.plain)
+            ViewThatFits(in: .horizontal) {
+                // Wide layout: single clean row
+                HStack(spacing: 12) {
+                    searchFieldView
+                        .frame(minWidth: 160, idealWidth: 200, maxWidth: 260)
+
+                    typeFilterPicker
+
+                    Spacer(minLength: 8)
+
+                    playbackControlsView
+
+                    addWallpaperButton
+                }
+
+                // Compact layout: responsive two rows preventing text compression
+                VStack(spacing: 10) {
+                    HStack(spacing: 10) {
+                        searchFieldView
+                            .frame(maxWidth: .infinity)
+
+                        addWallpaperButton
+                    }
+
+                    HStack(spacing: 10) {
+                        typeFilterPicker
+
+                        Spacer(minLength: 8)
+
+                        playbackControlsView
                     }
                 }
-                .padding(6)
-                .background(Color(NSColor.controlBackgroundColor))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-                .frame(maxWidth: 240)
-
-                // Type Filter Picker
-                Picker("Filter", selection: $appState.filterType) {
-                    Text("All").tag(WallpaperType?.none)
-                    Text("Videos").tag(WallpaperType?.some(.video))
-                    Text("HTML5 Web").tag(WallpaperType?.some(.web))
-                    Text("URLs").tag(WallpaperType?.some(.url))
-                }
-                .pickerStyle(.segmented)
-                .frame(maxWidth: 280)
-
-                Spacer()
-
-                // Playback Controls
-                Button(action: {
-                    appState.togglePause()
-                    windowManager?.setPaused(appState.isPaused)
-                }) {
-                    Label(
-                        appState.isPaused ? "Resume" : "Pause",
-                        systemImage: appState.isPaused ? "play.fill" : "pause.fill"
-                    )
-                }
-                .help("Pause or resume live wallpaper rendering")
-
-                Button(action: {
-                    appState.toggleMute()
-                    windowManager?.setMuted(appState.isMuted)
-                }) {
-                    Label(
-                        appState.isMuted ? "Unmute" : "Mute",
-                        systemImage: appState.isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill"
-                    )
-                }
-                .help("Mute or unmute wallpaper audio")
-
-                // Add Wallpaper Button
-                Button(action: { showingAddSheet = true }) {
-                    Label("Add Wallpaper", systemImage: "plus")
-                }
-                .buttonStyle(.borderedProminent)
             }
-            .padding()
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
             .background(Color(NSColor.windowBackgroundColor))
 
             Divider()
@@ -134,20 +107,93 @@ public struct WallpaperGalleryView: View {
         }
     }
 
+    // MARK: - Toolbar Controls Subviews
+
+    private var searchFieldView: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.secondary)
+            TextField("Search wallpapers...", text: $appState.searchQuery)
+                .textFieldStyle(.plain)
+            if !appState.searchQuery.isEmpty {
+                Button(action: { appState.searchQuery = "" }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(Color(NSColor.controlBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+    }
+
+    private var typeFilterPicker: some View {
+        Picker("Filter", selection: $appState.filterType) {
+            Text("All").tag(WallpaperType?.none)
+            Text("Videos").tag(WallpaperType?.some(.video))
+            Text("HTML5 Web").tag(WallpaperType?.some(.web))
+            Text("URLs").tag(WallpaperType?.some(.url))
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .fixedSize(horizontal: true, vertical: false)
+    }
+
+    private var playbackControlsView: some View {
+        HStack(spacing: 8) {
+            Button(action: {
+                appState.togglePause()
+                windowManager?.setPaused(appState.isPaused)
+            }) {
+                Label(
+                    appState.isPaused ? "Resume" : "Pause",
+                    systemImage: appState.isPaused ? "play.fill" : "pause.fill"
+                )
+            }
+            .help("Pause or resume live wallpaper rendering")
+            .fixedSize(horizontal: true, vertical: false)
+
+            Button(action: {
+                appState.toggleMute()
+                windowManager?.setMuted(appState.isMuted)
+            }) {
+                Label(
+                    appState.isMuted ? "Unmute" : "Mute",
+                    systemImage: appState.isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill"
+                )
+            }
+            .help("Mute or unmute wallpaper audio")
+            .fixedSize(horizontal: true, vertical: false)
+        }
+    }
+
+    private var addWallpaperButton: some View {
+        Button(action: { showingAddSheet = true }) {
+            Label("Add Wallpaper", systemImage: "plus")
+        }
+        .buttonStyle(.borderedProminent)
+        .fixedSize(horizontal: true, vertical: false)
+    }
+
     // MARK: - Empty State View
 
     private var emptyStateView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 14) {
             Image(systemName: "photo.on.rectangle.angled")
-                .font(.system(size: 48))
+                .font(.system(size: 44))
                 .foregroundColor(.secondary)
             Text(appState.searchQuery.isEmpty ? "No Wallpapers in Library" : "No Matching Wallpapers Found")
-                .font(.headline)
+                .font(.title3.weight(.semibold))
+                .lineLimit(1)
             Text(appState.searchQuery.isEmpty ? "Click 'Add Wallpaper' to import an MP4/MOV video, HTML5 folder, or web URL." : "Try clearing your search term or changing the category filter.")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
-                .frame(maxWidth: 320)
+                .lineSpacing(3)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: 340)
 
             if appState.searchQuery.isEmpty {
                 Button(action: { showingAddSheet = true }) {
@@ -155,6 +201,7 @@ public struct WallpaperGalleryView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .padding(.top, 8)
+                .fixedSize()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

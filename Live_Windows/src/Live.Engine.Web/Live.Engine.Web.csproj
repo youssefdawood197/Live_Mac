@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Live.Engine.Web</RootNamespace>
+    <AssemblyName>Live.Engine.Web</AssemblyName>
+    <Description>Microsoft WebView2 HTML5, WebGL, and Web wallpaper playback engine</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Live.Core\Live.Core.csproj" />
+    <ProjectReference Include="..\Live.Interop.Win32\Live.Interop.Win32.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2478.35" />
+  </ItemGroup>
+
+</Project>

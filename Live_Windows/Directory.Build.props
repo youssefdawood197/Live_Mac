@@ -1,0 +1,40 @@
+<Project>
+  <PropertyGroup>
+    <!-- Target Framework & Operating System Compatibility -->
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+
+    <!-- Language & Compiler Features -->
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+
+    <!-- Platform Targets & Architectures -->
+    <Platforms>x64;ARM64;AnyCPU</Platforms>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+
+    <!-- Assembly & Product Metadata -->
+    <Company>LiveWallpaper</Company>
+    <Product>Lively Wallpaper Windows</Product>
+    <Authors>LiveWallpaper Contributors</Authors>
+    <Copyright>Copyright © 2026 Lively Wallpaper</Copyright>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <NeutralLanguage>en-US</NeutralLanguage>
+
+    <!-- Code Quality & Analysis -->
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <!-- Default PlatformTarget fallbacks -->
+  <PropertyGroup Condition="'$(Platform)' == 'x64'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)' == 'ARM64'">
+    <PlatformTarget>ARM64</PlatformTarget>
+  </PropertyGroup>
+</Project>

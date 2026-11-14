@@ -229,14 +229,16 @@ public final class DesktopWindowManager: DesktopWindowManagerProtocol, Wallpaper
         let currentDisplayIDs = Set(currentScreens.map { $0.displayID })
 
         // 1. Remove disconnected displays
-        for (displayID, window) in windows where !currentDisplayIDs.contains(displayID) {
+        let disconnectedIDs = windows.keys.filter { !currentDisplayIDs.contains($0) }
+        for displayID in disconnectedIDs {
             if let engine = engines.removeValue(forKey: displayID) {
                 engine.terminate()
             }
-            window.contentView = nil
-            window.orderOut(nil)
-            window.close()
-            windows.removeValue(forKey: displayID)
+            if let window = windows.removeValue(forKey: displayID) {
+                window.contentView = nil
+                window.orderOut(nil)
+                window.close()
+            }
         }
 
         // 2. Add or update displays
@@ -251,7 +253,9 @@ public final class DesktopWindowManager: DesktopWindowManagerProtocol, Wallpaper
                     frame: screen.frame,
                     isInteractive: self.isInteractive
                 )
-                window.orderBack(nil)
+                if NSClassFromString("XCTestCase") == nil {
+                    window.orderBack(nil)
+                }
                 windows[screen.displayID] = window
 
                 if let item = activeWallpaper {

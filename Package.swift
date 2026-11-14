@@ -43,7 +43,9 @@ let package = Package(
         // Opaque-box E2E test harness covering Tiers 1 to 4
         .testTarget(
             name: "WallpaperE2ETests",
-            dependencies: [],
+            dependencies: [
+                "WallpaperCore"
+            ],
             path: "Tests/WallpaperE2ETests"
         )
     ],

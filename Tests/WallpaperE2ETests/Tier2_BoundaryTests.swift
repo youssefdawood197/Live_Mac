@@ -198,6 +198,7 @@ final class Tier2_BoundaryTests: XCTestCase {
         XCTAssertTrue(engine.isPlaying)
     }
 
+    @MainActor
     func testF03_B04_extremeAspectRatioVideo() {
         let sampleMP4 = env.assetHelper.createSampleVideoMP4()
         let item = WallpaperItem(title: "Ultra Wide Video", type: .video, sourceURL: sampleMP4)

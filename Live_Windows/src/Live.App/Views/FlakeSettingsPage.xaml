@@ -1,0 +1,77 @@
+<Page
+    x:Class="Live.App.Views.FlakeSettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:views="using:Live.App.Views"
+    mc:Ignorable="d">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="20" Margin="16" MaxWidth="800">
+            <!-- Header & Master Toggle -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Flake Desktop Snowfall" Style="{ThemeResource TitleTextBlockStyle}" />
+                    <TextBlock Text="Ambient winter physics and snow accumulation on window ledges and taskbar"
+                               Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+                <ToggleSwitch
+                    x:Name="MasterToggle"
+                    HorizontalAlignment="Right"
+                    IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}"
+                    Margin="32,0,0,0" />
+            </StackPanel>
+
+            <!-- Intensity & Layer Mode Card -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Snowfall Intensity" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                    <RadioButtons SelectedIndex="{x:Bind ViewModel.IntensityIndex, Mode=TwoWay}">
+                        <RadioButton Content="Light (150 particles, gentle flurry)" />
+                        <RadioButton Content="Steady (400 particles, winter snowfall)" />
+                        <RadioButton Content="Blizzard (900 particles, swirling storm)" />
+                    </RadioButtons>
+                </StackPanel>
+            </Border>
+
+            <!-- Wind Compass Control Card -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Wind Direction &amp; Velocity" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                    <views:WindCompassControl
+                        WindAngleDegrees="{x:Bind ViewModel.WindAngleDegrees, Mode=TwoWay}"
+                        WindSpeed="{x:Bind ViewModel.WindSpeed, Mode=TwoWay}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Interactive Clearing Tools Card -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Interactive Clearing Tools" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                    <RadioButtons SelectedIndex="{x:Bind ViewModel.ToolIndex, Mode=TwoWay}">
+                        <RadioButton Content="Passthrough (Clicks pass to applications below)" />
+                        <RadioButton Content="Mitten (Circular brush clears snowdrifts on cursor drag)" />
+                        <RadioButton Content="Shovel (Wide rectangular scoop clears large snowdrifts)" />
+                    </RadioButtons>
+                </StackPanel>
+            </Border>
+
+            <!-- Features & Extras Card -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Features &amp; Sweepers" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                    <ToggleSwitch Header="Automated Snowplow Sweep (>32px snowbank trigger)"
+                                  IsOn="{x:Bind ViewModel.SnowplowEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch Header="Festive Fairy Lights on Window Borders"
+                                  IsOn="{x:Bind ViewModel.FairyLightsEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch Header="Ambient Winter Sound Effects"
+                                  IsOn="{x:Bind ViewModel.AmbientSoundEnabled, Mode=TwoWay}" />
+                    <Slider Header="Sound Volume"
+                            Minimum="0" Maximum="1" StepFrequency="0.05"
+                            Value="{x:Bind ViewModel.SoundVolume, Mode=TwoWay}" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

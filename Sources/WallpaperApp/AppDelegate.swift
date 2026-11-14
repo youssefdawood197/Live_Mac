@@ -13,6 +13,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
     public private(set) var windowManager: DesktopWindowManager!
     public private(set) var powerManager: PowerManager!
     public private(set) var statusItemController: StatusItemController!
+    public private(set) var flakeController: FlakeController!
 
     private var managerWindow: NSWindow?
 
@@ -45,12 +46,23 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
             attachToStatusBar: true
         )
 
+        // 5b. Initialize Flake Ambient Controller
+        self.flakeController = FlakeController(
+            config: appState.flakeConfig,
+            powerManager: powerManager
+        )
+        self.statusItemController.flakeController = flakeController
+
         // Hook status item callbacks
         statusItemController.onOpenManager = { [weak self] in
             self?.showManagerWindow()
         }
         statusItemController.onOpenSettings = { [weak self] in
             self?.appState.selectedNavigationTab = .settings
+            self?.showManagerWindow()
+        }
+        statusItemController.onOpenFlakeSettings = { [weak self] in
+            self?.appState.selectedNavigationTab = .flake
             self?.showManagerWindow()
         }
         statusItemController.onQuit = { [weak self] in
@@ -75,6 +87,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
     public func applicationWillTerminate(_ notification: Notification) {
         powerManager?.stopMonitoring()
         windowManager?.terminate()
+        flakeController?.closeAllOverlayWindows()
         statusItemController?.terminate()
     }
 
@@ -129,6 +142,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
         reasons: PauseReasons
     ) {
         windowManager.setPaused(isPaused)
+        flakeController?.setPaused(isPaused)
     }
 
     // MARK: - Window Management
@@ -171,6 +185,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
             backing: .buffered,
             defer: false
         )
+        window.minSize = NSSize(width: 640, height: 480)
         window.center()
         window.title = "Lively Wallpaper Manager"
         window.contentViewController = hostingController

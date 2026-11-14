@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Live.Core</RootNamespace>
+    <AssemblyName>Live.Core</AssemblyName>
+    <Description>Core models, Lively schema parser, Flake configuration, and interfaces for Lively Wallpaper Windows</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+  </ItemGroup>
+
+</Project>

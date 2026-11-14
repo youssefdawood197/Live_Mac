@@ -25,9 +25,11 @@ public final class StatusItemController: NSObject, NSMenuDelegate {
     public weak var appState: AppState?
     public weak var windowManager: DesktopWindowManagerProtocol?
     public weak var powerManager: PowerManagerProtocol?
+    public weak var flakeController: FlakeController?
 
     public var onOpenManager: (@MainActor () -> Void)?
     public var onOpenSettings: (@MainActor () -> Void)?
+    public var onOpenFlakeSettings: (@MainActor () -> Void)?
     public var onQuit: (@MainActor () -> Void)?
 
     // MARK: - AppKit Menu Components
@@ -135,6 +137,13 @@ public final class StatusItemController: NSObject, NSMenuDelegate {
         menu.addItem(interactiveItem)
         self.interactiveMenuItem = interactiveItem
 
+        // 4b. Flake Snow Mode Submenu
+        let flakeItem = NSMenuItem(title: "Flake Snow Mode", action: nil, keyEquivalent: "")
+        let flakeSubmenu = NSMenu(title: "Flake Snow Mode")
+        populateFlakeSubmenu(flakeSubmenu)
+        flakeItem.submenu = flakeSubmenu
+        menu.addItem(flakeItem)
+
         menu.addItem(NSMenuItem.separator())
 
         // 5. Quick Wallpapers Submenu
@@ -200,6 +209,65 @@ public final class StatusItemController: NSObject, NSMenuDelegate {
             item.state = (wallpaper.id == activeId) ? .on : .off
             submenu.addItem(item)
         }
+    }
+
+    private func populateFlakeSubmenu(_ submenu: NSMenu) {
+        submenu.removeAllItems()
+
+        let isFlakeActive = appState?.flakeConfig.isEnabled ?? false
+
+        // Toggle on/off
+        let toggleItem = NSMenuItem(
+            title: isFlakeActive ? "Disable Snowfall" : "Enable Snowfall",
+            action: #selector(flakeToggleClicked),
+            keyEquivalent: ""
+        )
+        toggleItem.target = self
+        toggleItem.state = isFlakeActive ? .on : .off
+        submenu.addItem(toggleItem)
+
+        if isFlakeActive {
+            submenu.addItem(NSMenuItem.separator())
+
+            // Intensity section
+            let intensityHeader = NSMenuItem(title: "Intensity", action: nil, keyEquivalent: "")
+            intensityHeader.isEnabled = false
+            submenu.addItem(intensityHeader)
+
+            let currentIntensity = appState?.flakeConfig.intensity ?? .steady
+            for intensity in SnowfallIntensity.allCases {
+                let item = NSMenuItem(
+                    title: intensity.rawValue,
+                    action: #selector(flakeIntensitySelected(_:)),
+                    keyEquivalent: ""
+                )
+                item.target = self
+                item.representedObject = intensity
+                item.state = (currentIntensity == intensity) ? .on : .off
+                submenu.addItem(item)
+            }
+
+            submenu.addItem(NSMenuItem.separator())
+
+            // Clear snow
+            let clearItem = NSMenuItem(
+                title: "Clear Snow Drifts",
+                action: #selector(clearSnowClicked),
+                keyEquivalent: ""
+            )
+            clearItem.target = self
+            submenu.addItem(clearItem)
+        }
+
+        submenu.addItem(NSMenuItem.separator())
+
+        let settingsItem = NSMenuItem(
+            title: "Flake Settings...",
+            action: #selector(openFlakeSettingsClicked),
+            keyEquivalent: ""
+        )
+        settingsItem.target = self
+        submenu.addItem(settingsItem)
     }
 
     // MARK: - State Update Protocol
@@ -300,6 +368,34 @@ public final class StatusItemController: NSObject, NSMenuDelegate {
 
         if let submenu = wallpapersSubmenuItem?.submenu {
             populateWallpapersSubmenu(submenu)
+        }
+    }
+
+    @objc private func flakeToggleClicked() {
+        guard let appState = self.appState else { return }
+        appState.flakeConfig.isEnabled.toggle()
+        flakeController?.config = appState.flakeConfig
+        rebuildMenu()
+    }
+
+    @objc private func flakeIntensitySelected(_ sender: NSMenuItem) {
+        guard let appState = self.appState, let intensity = sender.representedObject as? SnowfallIntensity else { return }
+        appState.flakeConfig.intensity = intensity
+        flakeController?.config = appState.flakeConfig
+        rebuildMenu()
+    }
+
+    @objc private func clearSnowClicked() {
+        flakeController?.clearAllSnow()
+    }
+
+    @objc private func openFlakeSettingsClicked() {
+        appState?.selectedNavigationTab = .flake
+        isManagerOpen = true
+        if let onOpenFlakeSettings = onOpenFlakeSettings {
+            onOpenFlakeSettings()
+        } else {
+            onOpenManager?()
         }
     }
 

@@ -101,7 +101,7 @@ public struct AddWallpaperSheet: View {
             }
             .padding()
         }
-        .frame(width: 520, height: 420)
+        .frame(minWidth: 500, idealWidth: 540, minHeight: 440, idealHeight: 480)
     }
 
     // MARK: - Video Import View
@@ -111,6 +111,9 @@ public struct AddWallpaperSheet: View {
             Text("Select an MP4 or MOV video to loop on your desktop.")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
 
             Button(action: selectVideoFile) {
                 Label("Browse Video File...", systemImage: "video.badge.plus")
@@ -123,6 +126,7 @@ public struct AddWallpaperSheet: View {
             Text("Supported Formats: MP4, MOV, M4V (H.264 / HEVC)")
                 .font(.caption)
                 .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding()
     }
@@ -135,6 +139,8 @@ public struct AddWallpaperSheet: View {
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
 
             Button(action: selectWebDirectory) {
                 Label("Browse HTML5 Folder...", systemImage: "folder.badge.plus")
@@ -147,6 +153,7 @@ public struct AddWallpaperSheet: View {
             Text("Folder must contain an entry point named index.html")
                 .font(.caption)
                 .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding()
     }
@@ -154,24 +161,30 @@ public struct AddWallpaperSheet: View {
     // MARK: - Remote URL Import View
 
     private var urlImportView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Live Web URL:")
-                .font(.subheadline)
-                .fontWeight(.medium)
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Live Web URL:")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
 
-            TextField("https://example.com/interactive-wallpaper", text: $remoteURLText)
-                .textFieldStyle(.roundedBorder)
+                TextField("https://example.com/interactive-wallpaper", text: $remoteURLText)
+                    .textFieldStyle(.roundedBorder)
+            }
 
-            Text("Title (Optional):")
-                .font(.subheadline)
-                .fontWeight(.medium)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Title (Optional):")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
 
-            TextField("My Web Wallpaper", text: $customTitle)
-                .textFieldStyle(.roundedBorder)
+                TextField("My Web Wallpaper", text: $customTitle)
+                    .textFieldStyle(.roundedBorder)
+            }
 
             Text("Renders any website, WebGL shader (Shadertoy), or live dashboard directly onto your desktop.")
                 .font(.caption)
                 .foregroundColor(.secondary)
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding()
     }

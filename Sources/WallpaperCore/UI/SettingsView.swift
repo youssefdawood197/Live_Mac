@@ -15,39 +15,51 @@ public struct SettingsView: View {
             // MARK: - Power & Energy Saving
             Section(header: Text("Energy & Performance").font(.headline)) {
                 Toggle(isOn: $appState.pauseOnFullscreen) {
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text("Pause when apps are full-screen")
-                            .fontWeight(.medium)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.primary)
                         Text("Automatically suspends video and web animation when gaming or running full-screen apps.")
-                            .font(.caption)
+                            .font(.system(size: 11))
                             .foregroundColor(.secondary)
+                            .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
+                    .padding(.vertical, 3)
                 }
                 .onChange(of: appState.pauseOnFullscreen) { _, _ in
                     updatePowerSettings()
                 }
 
                 Toggle(isOn: $appState.pauseOnBattery) {
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text("Pause on battery power")
-                            .fontWeight(.medium)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.primary)
                         Text("Halts live rendering when running on MacBook battery to maximize battery life.")
-                            .font(.caption)
+                            .font(.system(size: 11))
                             .foregroundColor(.secondary)
+                            .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
+                    .padding(.vertical, 3)
                 }
                 .onChange(of: appState.pauseOnBattery) { _, _ in
                     updatePowerSettings()
                 }
 
                 Toggle(isOn: $appState.pauseOnDisplaySleep) {
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text("Pause on display sleep and screen lock")
-                            .fontWeight(.medium)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.primary)
                         Text("Stops rendering when displays sleep or the lock screen activates.")
-                            .font(.caption)
+                            .font(.system(size: 11))
                             .foregroundColor(.secondary)
+                            .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
+                    .padding(.vertical, 3)
                 }
                 .onChange(of: appState.pauseOnDisplaySleep) { _, _ in
                     updatePowerSettings()
@@ -57,34 +69,42 @@ public struct SettingsView: View {
             // MARK: - Audio & Interaction
             Section(header: Text("Audio & Interaction").font(.headline)) {
                 Toggle(isOn: $appState.isMuted) {
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text("Mute wallpaper audio by default")
-                            .fontWeight(.medium)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.primary)
                         Text("Keeps live video wallpapers silent when set as desktop background.")
-                            .font(.caption)
+                            .font(.system(size: 11))
                             .foregroundColor(.secondary)
+                            .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
+                    .padding(.vertical, 3)
                 }
 
                 Toggle(isOn: $appState.isInteractionModeEnabled) {
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text("Interactive desktop mode")
-                            .fontWeight(.medium)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.primary)
                         Text("Elevates wallpaper to receive mouse clicks directly for HTML5/WebGL shaders.")
-                            .font(.caption)
+                            .font(.system(size: 11))
                             .foregroundColor(.secondary)
+                            .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
+                    .padding(.vertical, 3)
                 }
             }
 
             // MARK: - About & Architecture
             Section(header: Text("About Lively Wallpaper for Mac").font(.headline)) {
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 12) {
                         Image(systemName: "sparkles.tv")
-                            .font(.title)
+                            .font(.system(size: 32))
                             .foregroundColor(.accentColor)
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: 3) {
                             Text("Lively Wallpaper for macOS")
                                 .font(.headline)
                             Text("Version 1.0.0 (Native Apple Silicon)")
@@ -92,12 +112,15 @@ public struct SettingsView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-                    .padding(.vertical, 4)
+                    .padding(.vertical, 2)
 
                     Text("A pure native macOS replica of Lively Wallpaper built with Swift 6, SwiftUI, and AppKit. Features hardware-accelerated AVFoundation video looping, WebKit shader engine, and zero-TCC fullscreen auto-pause.")
-                        .font(.caption)
+                        .font(.system(size: 11))
                         .foregroundColor(.secondary)
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
+                .padding(.vertical, 4)
             }
         }
         .formStyle(.grouped)

@@ -34,6 +34,9 @@ public struct ManagerView: View {
                     NavigationLink(value: NavigationTab.library) {
                         Label("Wallpaper Library", systemImage: "photo.stack")
                     }
+                    NavigationLink(value: NavigationTab.flake) {
+                        Label("Flake Snow Mode", systemImage: "snowflake")
+                    }
                     NavigationLink(value: NavigationTab.settings) {
                         Label("Settings", systemImage: "gearshape")
                     }
@@ -46,11 +49,12 @@ public struct ManagerView: View {
                             Text(active.title)
                                 .font(.system(size: 12, weight: .semibold))
                                 .lineLimit(1)
+                                .truncationMode(.tail)
                             Text(active.type.displayName)
-                                .font(.system(size: 10))
+                                .font(.system(size: 10, weight: .medium))
                                 .foregroundColor(.secondary)
                         }
-                        .padding(.vertical, 2)
+                        .padding(.vertical, 3)
                     }
                 }
             }
@@ -68,6 +72,10 @@ public struct ManagerView: View {
                     onDelete: onDeleteWallpaper,
                     onAdd: onAddWallpaper
                 )
+            case .flake:
+                FlakeSettingsView(
+                    appState: appState
+                )
             case .settings:
                 SettingsView(
                     appState: appState,
@@ -75,6 +83,6 @@ public struct ManagerView: View {
                 )
             }
         }
-        .frame(minWidth: 800, idealWidth: 960, minHeight: 540, idealHeight: 640)
+        .frame(minWidth: 640, idealWidth: 920, minHeight: 480, idealHeight: 620)
     }
 }

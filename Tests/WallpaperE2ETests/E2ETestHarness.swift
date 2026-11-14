@@ -3,29 +3,9 @@ import AppKit
 import XCTest
 import WebKit
 import AVFoundation
+import WallpaperCore
 
 // MARK: - Core Protocols and Types (Interface Contracts)
-
-public struct PauseReasons: OptionSet, Sendable, CustomStringConvertible {
-    public let rawValue: Int
-    public init(rawValue: Int) { self.rawValue = rawValue }
-
-    public static let userPaused        = PauseReasons(rawValue: 1 << 0)
-    public static let fullscreenApp     = PauseReasons(rawValue: 1 << 1)
-    public static let displaySleeping   = PauseReasons(rawValue: 1 << 2)
-    public static let screenLocked      = PauseReasons(rawValue: 1 << 3)
-    public static let batterySaver      = PauseReasons(rawValue: 1 << 4)
-
-    public var description: String {
-        var reasons: [String] = []
-        if contains(.userPaused) { reasons.append("userPaused") }
-        if contains(.fullscreenApp) { reasons.append("fullscreenApp") }
-        if contains(.displaySleeping) { reasons.append("displaySleeping") }
-        if contains(.screenLocked) { reasons.append("screenLocked") }
-        if contains(.batterySaver) { reasons.append("batterySaver") }
-        return reasons.isEmpty ? "none" : reasons.joined(separator: ", ")
-    }
-}
 
 public enum WallpaperType: String, Codable, Sendable {
     case video
@@ -124,11 +104,13 @@ public struct SimulatedScreen: Equatable, Sendable {
     public let id: Int
     public var frame: CGRect
     public var scaleFactor: CGFloat
+    public var visibleFrame: CGRect
 
-    public init(id: Int, frame: CGRect, scaleFactor: CGFloat = 2.0) {
+    public init(id: Int, frame: CGRect, scaleFactor: CGFloat = 2.0, visibleFrame: CGRect? = nil) {
         self.id = id
         self.frame = frame
         self.scaleFactor = scaleFactor
+        self.visibleFrame = visibleFrame ?? frame
     }
 }
 
@@ -215,7 +197,9 @@ public final class MockVideoWallpaperEngine: WallpaperEngine, @unchecked Sendabl
 
     public init(item: WallpaperItem, initialVolume: Float = 1.0, initialMuted: Bool = false, delegate: WallpaperEngineDelegate? = nil) {
         self.item = item
-        self.view = NSView(frame: CGRect(x: 0, y: 0, width: 1920, height: 1080))
+        self.view = MainActor.assumeIsolated {
+            NSView(frame: CGRect(x: 0, y: 0, width: 1920, height: 1080))
+        }
         self.volume = initialVolume
         self.isMuted = initialMuted
         self.delegate = delegate
@@ -316,7 +300,9 @@ public final class MockWebWallpaperEngine: WallpaperEngine, @unchecked Sendable 
 
     public init(item: WallpaperItem) {
         self.item = item
-        self.view = NSView(frame: CGRect(x: 0, y: 0, width: 1920, height: 1080))
+        self.view = MainActor.assumeIsolated {
+            NSView(frame: CGRect(x: 0, y: 0, width: 1920, height: 1080))
+        }
         loadContent()
     }
 
