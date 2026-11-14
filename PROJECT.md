@@ -62,6 +62,11 @@ Operates as an accessory desktop application that renders hardware-accelerated v
 | 38 | Windows Parity Models & Engine | Scaffolding for `Live.Core` parity models and `Live.Engine.Flake` Win2D canvas | M4 | Survey / R3 | DONE |
 | 39 | E2E Test Suite Pass (Tiers 1-4) | 100% pass on requirement-driven opaque-box E2E test suite (392/392 pass) | M5 | Survey / Acceptance | DONE |
 | 40 | Adversarial Coverage Hardening (Tier 5) | Challenger-driven white-box adversarial stress testing & coverage audit (50/50 pass) | M5 | Survey / Acceptance | DONE |
+| 41 | Procedural Winter Breeze Audio | Zero-asset brown noise synthesized ambient winter breeze loop with LFO modulation | Polish | R1 | DONE |
+| 42 | Interactive Snowman Builder Tool | Interactive cursor tool constructing multi-part pop-in snowmen on click | Polish | R1 | DONE |
+| 43 | CLI Terminal Controls | Headless/terminal arguments (`--play`, `--pause`, `--flake`, `--clear-snow`, `--help`) | Polish | CLI | DONE |
+| 44 | Native AppIcon & DMG Packaging | macOS squircle icon generator and compressed drag-and-drop installer disk image | Polish | Packaging | DONE |
+| 45 | GitHub Actions CI/CD Pipeline | Automated parallel tests, release bundle, and DMG artifact uploads on push/PR | Polish | CI/CD | DONE |
 
 ---
 
