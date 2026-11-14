@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Winter Solstice - Ambient Live Wallpaper</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #050b14; user-select: none; -webkit-user-select: none;
+    }
+    canvas {
+      display: block; width: 100vw; height: 100vh;
+      position: absolute; top: 0; left: 0;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="winterCanvas"></canvas>
+  <script>
+    (function() {
+      const canvas = document.getElementById('winterCanvas');
+      const ctx = canvas.getContext('2d');
+      let width, height, dpr;
+      let tick = 0;
+
+      // 1. Star field
+      const stars = [];
+      for (let i = 0; i < 240; i++) {
+        stars.push({
+          x: Math.random(),
+          y: Math.random() * 0.65,
+          size: Math.random() * 1.8 + 0.4,
+          speed: Math.random() * 0.03 + 0.01,
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+
+      // 2. Shooting stars
+      let shootingStar = null;
+      function spawnShootingStar() {
+        if (Math.random() < 0.008 && !shootingStar) {
+          shootingStar = {
+            x: Math.random() * width * 0.8,
+            y: Math.random() * height * 0.3,
+            len: Math.random() * 120 + 80,
+            speed: Math.random() * 14 + 10,
+            angle: Math.PI / 4 + (Math.random() - 0.5) * 0.2,
+            opacity: 1.0
+          };
+        }
+      }
+
+      function resize() {
+        dpr = window.devicePixelRatio || 1;
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+
+      // Draw mountain range
+      function drawMountains(baseY, peakHeight, points, color, snowColor) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(0, height);
+        ctx.lineTo(0, baseY);
+
+        const step = width / (points.length - 1);
+        for (let i = 0; i < points.length; i++) {
+          const x = i * step;
+          const y = baseY - points[i] * peakHeight;
+          ctx.lineTo(x, y);
+        }
+
+        ctx.lineTo(width, height);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        // Snow caps
+        ctx.beginPath();
+        for (let i = 0; i < points.length; i++) {
+          const x = i * step;
+          const y = baseY - points[i] * peakHeight;
+          if (points[i] > 0.4) {
+            ctx.moveTo(x - step * 0.4, y + 25);
+            ctx.lineTo(x, y);
+            ctx.lineTo(x + step * 0.4, y + 25);
+          }
+        }
+        ctx.strokeStyle = snowColor;
+        ctx.lineWidth = 4;
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // Draw a pine tree
+      function drawPineTree(x, y, scale, color) {
+        ctx.save();
+        ctx.fillStyle = color;
+        const w = 18 * scale;
+        const h = 45 * scale;
+
+        // Trunk
+        ctx.fillRect(x - 2 * scale, y, 4 * scale, 10 * scale);
+
+        // Three tiers
+        for (let tier = 0; tier < 3; tier++) {
+          const ty = y - tier * (h * 0.28);
+          const tw = w * (1.0 - tier * 0.2);
+          ctx.beginPath();
+          ctx.moveTo(x, ty - h * 0.4);
+          ctx.lineTo(x - tw, ty);
+          ctx.lineTo(x + tw, ty);
+          ctx.closePath();
+          ctx.fill();
+
+          // Snow tip
+          ctx.fillStyle = 'rgba(230, 245, 255, 0.4)';
+          ctx.beginPath();
+          ctx.moveTo(x, ty - h * 0.4);
+          ctx.lineTo(x - tw * 0.35, ty - h * 0.2);
+          ctx.lineTo(x + tw * 0.35, ty - h * 0.2);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = color;
+        }
+
+        ctx.restore();
+      }
+
+      // Procedural mountain data
+      const farMountains = [0.2, 0.5, 0.8, 0.4, 0.9, 0.6, 0.75, 0.3, 0.65, 0.2];
+      const midMountains = [0.1, 0.35, 0.6, 0.3, 0.55, 0.4, 0.65, 0.45, 0.25, 0.1];
+
+      function render() {
+        tick++;
+        ctx.clearRect(0, 0, width, height);
+
+        // Sky Gradient (Midnight Deep Blue to Soft Indigo)
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, height);
+        skyGrad.addColorStop(0, '#040814');
+        skyGrad.addColorStop(0.5, '#0b162c');
+        skyGrad.addColorStop(0.85, '#162848');
+        skyGrad.addColorStop(1, '#1b2f4f');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, width, height);
+
+        // Moon & Celestial Glow
+        const moonX = width * 0.82;
+        const moonY = height * 0.22;
+        const moonR = 34;
+
+        // Soft atmospheric halo
+        const haloGrad = ctx.createRadialGradient(moonX, moonY, moonR * 0.5, moonX, moonY, moonR * 4.5);
+        haloGrad.addColorStop(0, 'rgba(210, 235, 255, 0.22)');
+        haloGrad.addColorStop(0.5, 'rgba(150, 195, 255, 0.08)');
+        haloGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = haloGrad;
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, moonR * 4.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Moon body
+        ctx.fillStyle = '#f0f6ff';
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, moonR, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Crescent shadow
+        ctx.fillStyle = '#0a1426';
+        ctx.beginPath();
+        ctx.arc(moonX + 11, moonY - 5, moonR * 0.9, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Stars with Twinkle
+        for (let s of stars) {
+          const alpha = 0.3 + 0.7 * Math.sin(tick * s.speed + s.phase);
+          ctx.fillStyle = `rgba(220, 240, 255, ${Math.max(0.1, alpha)})`;
+          ctx.beginPath();
+          ctx.arc(s.x * width, s.y * height, s.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Shooting Star
+        spawnShootingStar();
+        if (shootingStar) {
+          ctx.save();
+          ctx.strokeStyle = `rgba(255, 255, 255, ${shootingStar.opacity})`;
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          ctx.moveTo(shootingStar.x, shootingStar.y);
+          const endX = shootingStar.x - Math.cos(shootingStar.angle) * shootingStar.len;
+          const endY = shootingStar.y - Math.sin(shootingStar.angle) * shootingStar.len;
+          ctx.lineTo(endX, endY);
+          ctx.stroke();
+          ctx.restore();
+
+          shootingStar.x += Math.cos(shootingStar.angle) * shootingStar.speed;
+          shootingStar.y += Math.sin(shootingStar.angle) * shootingStar.speed;
+          shootingStar.opacity -= 0.025;
+          if (shootingStar.opacity <= 0) shootingStar = null;
+        }
+
+        // Mountains (Distant & Mid)
+        drawMountains(height * 0.72, 140, farMountains, '#0f1d36', 'rgba(200, 225, 250, 0.35)');
+        drawMountains(height * 0.78, 110, midMountains, '#142542', 'rgba(220, 240, 255, 0.45)');
+
+        // Ambient Snow Mist Layer
+        const mistGrad = ctx.createLinearGradient(0, height * 0.7, 0, height);
+        mistGrad.addColorStop(0, 'rgba(180, 215, 245, 0.0)');
+        mistGrad.addColorStop(0.5, 'rgba(180, 215, 245, 0.08)');
+        mistGrad.addColorStop(1, 'rgba(210, 235, 255, 0.18)');
+        ctx.fillStyle = mistGrad;
+        ctx.fillRect(0, height * 0.7, width, height * 0.3);
+
+        // Foreground snowy foothills
+        ctx.fillStyle = '#182d4e';
+        ctx.beginPath();
+        ctx.moveTo(0, height);
+        ctx.lineTo(0, height * 0.85);
+        ctx.bezierCurveTo(width * 0.3, height * 0.81, width * 0.6, height * 0.89, width, height * 0.83);
+        ctx.lineTo(width, height);
+        ctx.closePath();
+        ctx.fill();
+
+        // Foreground Pine Trees
+        const treeBaseY = height * 0.85;
+        const treeCount = Math.floor(width / 65);
+        for (let i = 0; i <= treeCount; i++) {
+          const tx = i * 65 + (i % 2 === 0 ? 10 : -15);
+          const tScale = 0.7 + (i % 3) * 0.25;
+          drawPineTree(tx, treeBaseY + (i % 2) * 20, tScale, '#0c1729');
+        }
+
+        // Cozy Cabin in the foothills with warm glowing window
+        const cabinX = width * 0.68;
+        const cabinY = height * 0.82;
+        ctx.fillStyle = '#0a121f';
+        ctx.fillRect(cabinX, cabinY, 44, 26); // Cabin wall
+        // Roof
+        ctx.beginPath();
+        ctx.moveTo(cabinX - 6, cabinY);
+        ctx.lineTo(cabinX + 22, cabinY - 16);
+        ctx.lineTo(cabinX + 50, cabinY);
+        ctx.closePath();
+        ctx.fillStyle = '#142338';
+        ctx.fill();
+        // Snow on roof
+        ctx.strokeStyle = 'rgba(240, 250, 255, 0.85)';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.moveTo(cabinX - 6, cabinY);
+        ctx.lineTo(cabinX + 22, cabinY - 16);
+        ctx.lineTo(cabinX + 50, cabinY);
+        ctx.stroke();
+
+        // Warm Yellow Light from Window
+        const windowFlicker = 0.85 + 0.15 * Math.sin(tick * 0.08);
+        ctx.fillStyle = `rgba(255, 205, 90, ${windowFlicker})`;
+        ctx.fillRect(cabinX + 16, cabinY + 7, 12, 11);
+
+        // Window warm glow radius
+        const glowGrad = ctx.createRadialGradient(cabinX + 22, cabinY + 12, 3, cabinX + 22, cabinY + 12, 28);
+        glowGrad.addColorStop(0, `rgba(255, 195, 60, ${0.4 * windowFlicker})`);
+        glowGrad.addColorStop(1, 'rgba(255, 195, 60, 0)');
+        ctx.fillStyle = glowGrad;
+        ctx.beginPath();
+        ctx.arc(cabinX + 22, cabinY + 12, 28, 0, Math.PI * 2);
+        ctx.fill();
+
+        requestAnimationFrame(render);
+      }
+
+      render();
+    })();
+  </script>
+</body>
+</html>

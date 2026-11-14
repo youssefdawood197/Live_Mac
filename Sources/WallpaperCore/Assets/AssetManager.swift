@@ -167,6 +167,7 @@ public final class AssetManager: @unchecked Sendable {
             ("cosmic_warp", "Cosmic Warp Speed (4K)", .web, "4K 3D hyperspace starfield simulation with glowing star streaks and cursor steering."),
             ("synthwave_sun", "Retro Synthwave Sunset (4K)", .web, "80s Outrun wireframe perspective grid with a pulsing neon sun and starry horizon."),
             ("aurora_borealis", "Aurora Borealis (4K)", .web, "Atmospheric multi-layered fluid aurora ribbons with shimmering colors and mountain silhouette."),
+            ("winter_solstice", "Winter Solstice (4K Ambient)", .web, "Midnight snow-capped mountain ridge under starry skies with a cozy glowing cabin, designed for Flake snowfall mode."),
             ("constellation", "Neural Constellations (4K)", .web, "High-DPI physics-driven glowing node network forming dynamic constellations."),
             ("sample_canvas", "Lively Waves (HTML5 Canvas)", .web, "Interactive canvas animation with multi-layered animated waves.")
         ]
