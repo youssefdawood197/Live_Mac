@@ -60,6 +60,14 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
             .dropFirst()
             .sink { [weak self] newConfig in
                 self?.flakeController?.config = newConfig
+                self?.writeStatusSnapshot()
+            }
+            .store(in: &cancellables)
+
+        appState.objectWillChange
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.writeStatusSnapshot()
             }
             .store(in: &cancellables)
 
@@ -83,6 +91,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
         Task {
             await initializeLibraryAndPlayback()
             parseCommandLineArguments()
+            writeStatusSnapshot()
             showManagerWindow()
         }
 
@@ -106,6 +115,10 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
 
     public func applicationWillTerminate(_ notification: Notification) {
         DistributedNotificationCenter.default().removeObserver(self, name: Notification.Name("com.lively.wallpaper.command"), object: nil)
+        if let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
+            let statusURL = appSupport.appendingPathComponent("LivelyWallpaper/status.json")
+            try? FileManager.default.removeItem(at: statusURL)
+        }
         powerManager?.stopMonitoring()
         windowManager?.terminate()
         flakeController?.closeAllOverlayWindows()
@@ -240,6 +253,54 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
                 appState.setActiveWallpaper(found)
                 windowManager?.setWallpaper(found)
             }
+        }
+
+        if let idx = args.firstIndex(of: "--add-wallpaper"), idx + 1 < args.count {
+            let rawPath = args[idx + 1]
+            let fileURL = URL(fileURLWithPath: (rawPath as NSString).expandingTildeInPath)
+            var isDir: ObjCBool = false
+            if FileManager.default.fileExists(atPath: fileURL.path, isDirectory: &isDir) {
+                let title = fileURL.deletingPathExtension().lastPathComponent
+                let ext = fileURL.pathExtension.lowercased()
+                let item: WallpaperItem
+                if isDir.boolValue {
+                    item = WallpaperItem(title: title, type: .web, sourceURL: fileURL)
+                } else if ["mp4", "mov", "m4v"].contains(ext) {
+                    item = WallpaperItem(title: title, type: .video, sourceURL: fileURL)
+                } else {
+                    return
+                }
+                appState.addWallpaper(item)
+                Task {
+                    try? await library.add(item, saveImmediately: true)
+                }
+            }
+        }
+
+        writeStatusSnapshot()
+    }
+
+    public func writeStatusSnapshot() {
+        guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return }
+        let statusURL = appSupport.appendingPathComponent("LivelyWallpaper/status.json")
+
+        let dict: [String: Any] = [
+            "pid": ProcessInfo.processInfo.processIdentifier,
+            "activeWallpaperTitle": appState.activeWallpaper?.title ?? "None",
+            "activeWallpaperType": appState.activeWallpaper?.type.rawValue ?? "None",
+            "isPaused": appState.isPaused,
+            "isMuted": appState.isMuted,
+            "isInteractive": appState.isInteractionModeEnabled,
+            "flakeEnabled": appState.flakeConfig.isEnabled,
+            "flakeIntensity": appState.flakeConfig.intensity.rawValue,
+            "flakeWindAngle": appState.flakeConfig.windAngleDegrees,
+            "flakeWindSpeed": appState.flakeConfig.windSpeed,
+            "activeTool": appState.flakeConfig.activeTool.rawValue,
+            "displayCount": NSScreen.screens.count
+        ]
+
+        if let data = try? JSONSerialization.data(withJSONObject: dict, options: [.prettyPrinted]) {
+            try? data.write(to: statusURL, options: .atomic)
         }
     }
 

@@ -19,9 +19,56 @@ if CommandLine.arguments.contains("-h") || CommandLine.arguments.contains("--hel
       --flake-intensity <light|steady|blizzard>  Set snowfall intensity
       --clear-snow                               Clear all active snowdrifts
       --set-wallpaper <title|path>               Switch active wallpaper
+      --add-wallpaper <file|folder>              Import a video or web wallpaper into library
+      --status                                   Display live runtime state and diagnostics
       --list                                     List all wallpapers in library
       -h, --help                                 Show this help message and exit
     """)
+    exit(0)
+}
+
+if CommandLine.arguments.contains("--status") {
+    let fileManager = FileManager.default
+    let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+    let statusURL = appSupport.appendingPathComponent("LivelyWallpaper/status.json")
+
+    let running = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
+        .first(where: { $0.processIdentifier != ProcessInfo.processInfo.processIdentifier })
+
+    if let running = running,
+       let data = try? Data(contentsOf: statusURL),
+       let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+        let title = dict["activeWallpaperTitle"] as? String ?? "None"
+        let type = (dict["activeWallpaperType"] as? String ?? "video").uppercased()
+        let isPaused = dict["isPaused"] as? Bool ?? false
+        let isMuted = dict["isMuted"] as? Bool ?? true
+        let isInteractive = dict["isInteractive"] as? Bool ?? false
+        let flake = dict["flakeEnabled"] as? Bool ?? false
+        let intensity = (dict["flakeIntensity"] as? String ?? "steady").capitalized
+        let angle = Int(dict["flakeWindAngle"] as? Double ?? 90)
+        let speed = String(format: "%.1fx", dict["flakeWindSpeed"] as? Double ?? 1.0)
+        let tool = (dict["activeTool"] as? String ?? "None").capitalized
+        let displays = dict["displayCount"] as? Int ?? 1
+
+        print("Lively Wallpaper Status:")
+        print("--------------------------------------------------------------------------------")
+        print("State            : Running (PID: \(running.processIdentifier))")
+        print("Active Wallpaper : \(title) [\(type)]")
+        print("Playback State   : \(isPaused ? "Paused" : "Playing") (Audio: \(isMuted ? "Muted" : "Unmuted"))")
+        print("Interactivity    : \(isInteractive ? "Interactive (Capturing Input)" : "Off (Click-through to desktop)")")
+        print("Flake Snow Mode  : \(flake ? "Enabled [\(intensity)]" : "Disabled")")
+        if flake {
+            print("Wind Physics     : \(angle)° @ \(speed)")
+            print("Cursor Tool      : \(tool)")
+        }
+        print("Displays         : \(displays) active monitor\(displays == 1 ? "" : "s")")
+        print("--------------------------------------------------------------------------------")
+    } else if let running = running {
+        print("Lively Wallpaper is running (PID: \(running.processIdentifier)), but status snapshot is initializing.")
+    } else {
+        print("Lively Wallpaper is currently not running.")
+        print("Launch with: open build/LivelyWallpaper.app")
+    }
     exit(0)
 }
 
