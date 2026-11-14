@@ -125,15 +125,24 @@ swift build
 swift test
 ```
 
-### Package Standalone Application Bundle (`.app`)
-Use the included bundling script to produce an ad-hoc signed, standalone `LivelyWallpaper.app`:
+### Package Standalone Application Bundle (`.app`) & Disk Image (`.dmg`)
+Use the included bundling scripts to produce an ad-hoc signed, standalone `LivelyWallpaper.app` and drag-and-drop `LivelyWallpaper.dmg`:
 ```bash
+# Build release bundle
 ./scripts/bundle_app.sh -c release
+
+# Build distributable installer disk image
+./scripts/create_dmg.sh
 ```
 
 Launch the application:
 ```bash
 open build/LivelyWallpaper.app
+```
+
+Or mount the DMG installer:
+```bash
+open build/LivelyWallpaper.dmg
 ```
 
 ---
@@ -146,13 +155,13 @@ The project includes an extensive test suite comprising unit tests, integration 
 # Run all macOS tests (805 tests, 0 failures)
 swift test
 
-# Run Windows architecture verification suite (34 tests, 0 failures)
+# Run Windows architecture verification suite (35 tests, 0 failures)
 python3 Live_Windows/tests/verification/run_all_challenges.py
 ```
 
 * **`WallpaperCoreTests`**: Unit, adversarial stress, Flake physics, and memory stability test suites (322 tests).
 * **`WallpaperE2ETests`**: 4-tier requirement and scenario-driven E2E test harness (483 tests).
-* **`Live_Windows/tests`**: Challenger tests verifying WorkerW injection, DWM window detection, and bitmask pause states (34 tests).
+* **`Live_Windows/tests`**: Challenger tests verifying WorkerW injection, DWM window detection, and bitmask pause states (35 tests).
 
 ---
 
