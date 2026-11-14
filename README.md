@@ -145,6 +145,37 @@ Or mount the DMG installer:
 open build/LivelyWallpaper.dmg
 ```
 
+### CLI Command Reference
+Lively Wallpaper supports full terminal and script automation via distributed IPC:
+```bash
+# Display real-time runtime state and diagnostics
+./build/LivelyWallpaper.app/Contents/MacOS/WallpaperApp --status
+
+# Output formatted table of all wallpapers in library
+./build/LivelyWallpaper.app/Contents/MacOS/WallpaperApp --list
+
+# Switch active wallpaper dynamically
+./build/LivelyWallpaper.app/Contents/MacOS/WallpaperApp --set-wallpaper "Winter Solstice"
+
+# Import a new video or HTML5/WebGL folder into library
+./build/LivelyWallpaper.app/Contents/MacOS/WallpaperApp --add-wallpaper ~/Downloads/my_video.mp4
+
+# Toggle Flake ambient snow mode and set blizzard intensity
+./build/LivelyWallpaper.app/Contents/MacOS/WallpaperApp --flake on --flake-intensity blizzard
+
+# Immediately clear all active snowbanks
+./build/LivelyWallpaper.app/Contents/MacOS/WallpaperApp --clear-snow
+
+# Toggle interactive desktop mode for WebGL/HTML5 shaders
+./build/LivelyWallpaper.app/Contents/MacOS/WallpaperApp --interactive on
+
+# Playback controls
+./build/LivelyWallpaper.app/Contents/MacOS/WallpaperApp --pause
+./build/LivelyWallpaper.app/Contents/MacOS/WallpaperApp --play
+./build/LivelyWallpaper.app/Contents/MacOS/WallpaperApp --mute
+./build/LivelyWallpaper.app/Contents/MacOS/WallpaperApp --unmute
+```
+
 ---
 
 ## 🧪 Testing & Verification
