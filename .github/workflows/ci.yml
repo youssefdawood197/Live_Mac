@@ -1,0 +1,57 @@
+name: CI & Distribution
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos-build-and-test:
+    name: macOS Build & Test (Apple Silicon / Xcode 16)
+    runs-on: macos-14
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 16
+        run: sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer || true
+
+      - name: Verify Swift Toolchain
+        run: swift --version
+
+      - name: Run macOS Automated Tests
+        run: swift test --parallel
+
+      - name: Build Release Application Bundle
+        run: ./scripts/bundle_app.sh -c release -v
+
+      - name: Package Release DMG Disk Image
+        run: ./scripts/create_dmg.sh
+
+      - name: Upload macOS Release Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: LivelyWallpaper-macOS
+          path: |
+            build/LivelyWallpaper.app
+            build/LivelyWallpaper.dmg
+
+  windows-verification:
+    name: Windows Scaffolding & Challenger Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run Windows Challenger Test Suite
+        run: python3 Live_Windows/tests/verification/run_all_challenges.py
