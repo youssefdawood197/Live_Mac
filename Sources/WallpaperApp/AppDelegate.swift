@@ -88,6 +88,15 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
 
         // 7. Start power & fullscreen monitoring
         powerManager.startMonitoring()
+
+        // 8. Register distributed IPC command listener for CLI forwards
+        DistributedNotificationCenter.default().addObserver(
+            self,
+            selector: #selector(handleDistributedCommand(_:)),
+            name: Notification.Name("com.lively.wallpaper.command"),
+            object: nil,
+            suspensionBehavior: .deliverImmediately
+        )
     }
 
     public func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
@@ -96,6 +105,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
     }
 
     public func applicationWillTerminate(_ notification: Notification) {
+        DistributedNotificationCenter.default().removeObserver(self, name: Notification.Name("com.lively.wallpaper.command"), object: nil)
         powerManager?.stopMonitoring()
         windowManager?.terminate()
         flakeController?.closeAllOverlayWindows()
@@ -158,30 +168,45 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
 
     // MARK: - Command Line Arguments
 
+    @objc private func handleDistributedCommand(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let args = userInfo["args"] as? [String] else { return }
+        Task { @MainActor in
+            self.executeCLIArguments(args)
+        }
+    }
+
     private func parseCommandLineArguments() {
-        let args = CommandLine.arguments
+        let args = Array(CommandLine.arguments.dropFirst())
+        executeCLIArguments(args)
+    }
+
+    public func executeCLIArguments(_ args: [String]) {
+        if args.contains("--show-manager") {
+            showManagerWindow()
+        }
 
         if args.contains("--pause") {
             appState.isPaused = true
-            windowManager.setPaused(true)
+            windowManager?.setPaused(true)
         } else if args.contains("--play") {
             appState.isPaused = false
-            windowManager.setPaused(false)
+            windowManager?.setPaused(false)
         }
 
         if args.contains("--mute") {
             appState.isMuted = true
-            windowManager.setMuted(true)
+            windowManager?.setMuted(true)
         } else if args.contains("--unmute") {
             appState.isMuted = false
-            windowManager.setMuted(false)
+            windowManager?.setMuted(false)
         }
 
         if let idx = args.firstIndex(of: "--interactive"), idx + 1 < args.count {
             let val = args[idx + 1].lowercased()
             let enabled = (val == "on" || val == "true" || val == "1")
             appState.isInteractionModeEnabled = enabled
-            windowManager.isInteractive = enabled
+            windowManager?.isInteractive = enabled
         }
 
         if let idx = args.firstIndex(of: "--flake"), idx + 1 < args.count {
@@ -205,6 +230,16 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, PowerManagerDel
 
         if args.contains("--clear-snow") {
             flakeController?.clearAllSnow()
+        }
+
+        if let idx = args.firstIndex(of: "--set-wallpaper"), idx + 1 < args.count {
+            let target = args[idx + 1]
+            if let found = appState.wallpapers.first(where: { item in
+                item.title.localizedCaseInsensitiveContains(target) || item.pathOrURL.contains(target)
+            }) {
+                appState.setActiveWallpaper(found)
+                windowManager?.setWallpaper(found)
+            }
         }
     }
 
